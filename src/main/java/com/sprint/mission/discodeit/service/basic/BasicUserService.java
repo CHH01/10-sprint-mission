@@ -9,10 +9,11 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
+import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -29,7 +30,7 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
 
     @Override
-    public UserResponse createUser(UserCreateRequest request) {
+    public UserResponse createUser(UserCreateRequest request, MultipartFile file) {
         if (userRepository.findAll().stream().anyMatch(u -> u.getName().equals(request.getName()))) {
             throw new IllegalArgumentException("이미 존재하는 이름입니다: " + request.getName());
         }
@@ -37,24 +38,12 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + request.getEmail());
         }
 
-        UUID profileId = null;
-        BinaryContentRequest file = request.getBinaryContent();
-        
-        if (file != null && file.getContent() != null && file.getContent().length > 0) {
-            validateContentType(file.getContentType());
-            BinaryContent content = new BinaryContent(
-                    file.getContent(),
-                    file.getFileName(),
-                    file.getContentType()
-            );
-            binaryContentRepository.save(content);
-            profileId = content.getId();
-        }
+        UUID profileId = saveBinaryContent(file);
 
         User user = new User(request.getName(), request.getEmail(), request.getPassword(), profileId);
         userRepository.save(user);
 
-        UserStatus userStatus = new UserStatus(user.getId(), LocalDateTime.now());
+        UserStatus userStatus = new UserStatus(user.getId(), Instant.now());
         userStatusRepository.save(userStatus);
 
         return toResponse(user);
@@ -75,7 +64,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponse updateUser(UserUpdateRequest request) {
+    public UserResponse updateUser(UserUpdateRequest request, MultipartFile file) {
         User user = userRepository.findById(request.getId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
@@ -86,20 +75,12 @@ public class BasicUserService implements UserService {
             user.updateEmail(request.getEmail());
         }
 
-        BinaryContentRequest file = request.getBinaryContent();
-        if (file != null && file.getContent() != null && file.getContent().length > 0) {
-            validateContentType(file.getContentType());
-            
+        if (file != null && !file.isEmpty()) {
             if (user.getProfileId() != null) {
                 binaryContentRepository.delete(user.getProfileId());
             }
-            BinaryContent content = new BinaryContent(
-                    file.getContent(),
-                    file.getFileName(),
-                    file.getContentType()
-            );
-            binaryContentRepository.save(content);
-            user.updateProfileId(content.getId());
+            UUID profileId = saveBinaryContent(file);
+            user.updateProfileId(profileId);
         }
 
         userRepository.save(user);
@@ -109,6 +90,25 @@ public class BasicUserService implements UserService {
         }
         
         return toResponse(user);
+    }
+
+    private UUID saveBinaryContent(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+
+        validateContentType(file.getContentType());
+        try {
+            BinaryContent content = new BinaryContent(
+                    file.getBytes(),
+                    file.getOriginalFilename(),
+                    file.getContentType()
+            );
+            binaryContentRepository.save(content);
+            return content.getId();
+        } catch (IOException e) {
+            throw new RuntimeException("파일 저장 중 오류가 발생했습니다.", e);
+        }
     }
 
     @Override

@@ -15,7 +15,9 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,7 +31,7 @@ public class BasicMessageService implements MessageService {
     private final MessageMapper messageMapper;
 
     @Override
-    public MessageResponse createMessage(MessageCreateRequest request) {
+    public MessageResponse createMessage(MessageCreateRequest request, List<MultipartFile> files) {
         Channel channel = channelRepository.findById(request.getChannelId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
         User user = userRepository.findById(request.getAuthorId())
@@ -39,18 +41,7 @@ public class BasicMessageService implements MessageService {
             throw new IllegalArgumentException("채널에 먼저 입장해야 메시지를 남길 수 있습니다.");
         }
 
-        List<UUID> attachmentIds = new ArrayList<>();
-        if (request.getBinaryContents() != null) {
-            for (var binaryReq : request.getBinaryContents()) {
-                 BinaryContent binaryContent = new BinaryContent(
-                         binaryReq.getContent(), 
-                         binaryReq.getFileName(), 
-                         binaryReq.getContentType()
-                 );
-                 binaryContentRepository.save(binaryContent);
-                 attachmentIds.add(binaryContent.getId());
-            }
-        }
+        List<UUID> attachmentIds = saveBinaryContents(files);
 
         Message message = new Message(request.getChannelId(), request.getAuthorId(), request.getContent(), attachmentIds);
 
@@ -87,7 +78,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponse updateMessage(MessageUpdateRequest request) {
+    public MessageResponse updateMessage(MessageUpdateRequest request, List<MultipartFile> files) {
         Message message = messageRepository.findById(request.getId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
         
@@ -95,28 +86,41 @@ public class BasicMessageService implements MessageService {
             message.updateContent(request.getContent());
         }
 
-        if (request.getBinaryContents() != null) {
+        if (files != null && !files.isEmpty()) {
             if (message.getAttachmentIds() != null) {
                 for (UUID attachmentId : message.getAttachmentIds()) {
                     binaryContentRepository.delete(attachmentId);
                 }
             }
 
-            List<UUID> newAttachmentIds = new ArrayList<>();
-            for (var binaryReq : request.getBinaryContents()) {
-                BinaryContent binaryContent = new BinaryContent(
-                        binaryReq.getContent(),
-                        binaryReq.getFileName(),
-                        binaryReq.getContentType()
-                );
-                binaryContentRepository.save(binaryContent);
-                newAttachmentIds.add(binaryContent.getId());
-            }
+            List<UUID> newAttachmentIds = saveBinaryContents(files);
             message.updateAttachments(newAttachmentIds);
         }
 
         messageRepository.save(message);
         return messageMapper.toResponse(message);
+    }
+
+    private List<UUID> saveBinaryContents(List<MultipartFile> files) {
+        List<UUID> attachmentIds = new ArrayList<>();
+        if (files != null) {
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    try {
+                        BinaryContent binaryContent = new BinaryContent(
+                                file.getBytes(),
+                                file.getOriginalFilename(),
+                                file.getContentType()
+                        );
+                        binaryContentRepository.save(binaryContent);
+                        attachmentIds.add(binaryContent.getId());
+                    } catch (IOException e) {
+                        throw new RuntimeException("파일 저장 중 오류가 발생했습니다.", e);
+                    }
+                }
+            }
+        }
+        return attachmentIds;
     }
 
     @Override

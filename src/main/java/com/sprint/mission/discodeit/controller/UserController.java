@@ -1,25 +1,14 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.UserResponse;
-import com.sprint.mission.discodeit.dto.UserStatusResponse;
-import com.sprint.mission.discodeit.dto.UserUpdateRequest;
-import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.basic.BasicUserStatusService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
-
 import com.sprint.mission.discodeit.dto.*;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.basic.BasicUserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,16 +22,20 @@ public class UserController {
     private final UserService userService;
     private final BasicUserStatusService userStatusService;
 
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse createUser(@RequestBody UserCreateRequest request) {
-        return userService.createUser(request);
+    public UserResponse createUser(
+            @RequestPart("request") UserCreateRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+        return userService.createUser(request, file);
     }
 
-    @RequestMapping(method = RequestMethod.PUT)
+    @RequestMapping(method = RequestMethod.PUT, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public UserResponse updateUser(@RequestBody UserUpdateRequest request) {
-        return userService.updateUser(request);
+    public UserResponse updateUser(
+            @RequestPart("request") UserUpdateRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+        return userService.updateUser(request, file);
     }
 
     @RequestMapping(value = "/{userId}/status", method = RequestMethod.POST)

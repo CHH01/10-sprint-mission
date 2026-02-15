@@ -9,18 +9,12 @@ public class UserCreateRequest {
     private String name;
     private String email;
     private String password;
-    private BinaryContentRequest binaryContent;
 
-    public UserCreateRequest(String name, String email, String password, BinaryContentRequest binaryContent) {
+    public UserCreateRequest(String name, String email, String password) {
         validate(name, email, password);
         this.name = name;
         this.email = email;
         this.password = password;
-        this.binaryContent = binaryContent;
-    }
-
-    public UserCreateRequest(String name, String email, String password) {
-        this(name, email, password, null);
     }
 
     private void validate(String name, String email, String password) {

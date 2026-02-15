@@ -10,7 +10,7 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -28,10 +28,10 @@ public class BasicUserStatusService {
         }
         UserStatus userStatus = userStatusRepository.findByUserId(request.getUserId())
                 .map(existing -> {
-                    existing.updateLastSeen(LocalDateTime.now());
+                    existing.updateLastSeen(Instant.now());
                     return existing;
                 })
-                .orElseGet(() -> new UserStatus(request.getUserId(), LocalDateTime.now()));
+                .orElseGet(() -> new UserStatus(request.getUserId(), Instant.now()));
 
         userStatusRepository.save(userStatus);
         return userStatusMapper.toResponse(userStatus);
@@ -60,7 +60,7 @@ public class BasicUserStatusService {
     public UserStatusResponse updateByUserId(UUID userId) {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
-        userStatus.updateLastSeen(LocalDateTime.now());
+        userStatus.updateLastSeen(Instant.now());
         userStatusRepository.save(userStatus);
         return userStatusMapper.toResponse(userStatus);
     }

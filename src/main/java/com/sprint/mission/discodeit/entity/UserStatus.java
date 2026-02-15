@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import lombok.Getter;
@@ -10,20 +10,20 @@ import lombok.Getter;
 public class UserStatus extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     private final UUID userId;
-    private LocalDateTime lastSeen;
+    private Instant lastSeen;
 
-    public UserStatus(UUID userId, LocalDateTime lastSeen) {
+    public UserStatus(UUID userId, Instant lastSeen) {
         super();
         this.userId = userId;
         this.lastSeen = lastSeen;
     }
 
-    public void updateLastSeen(LocalDateTime lastSeen) {
+    public void updateLastSeen(Instant lastSeen) {
         this.lastSeen = lastSeen;
         updateTimestamps();
     }
 
     public boolean isOnline() {
-        return lastSeen.isAfter(LocalDateTime.now().minusMinutes(5));
+        return lastSeen.isAfter(Instant.now().minusSeconds(300));
     }
 }

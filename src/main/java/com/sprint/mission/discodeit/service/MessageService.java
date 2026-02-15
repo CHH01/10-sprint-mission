@@ -3,11 +3,12 @@ package com.sprint.mission.discodeit.service;
 import com.sprint.mission.discodeit.dto.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.MessageResponse;
 import com.sprint.mission.discodeit.dto.MessageUpdateRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
 public interface MessageService {
-    MessageResponse createMessage(MessageCreateRequest request);
+    MessageResponse createMessage(MessageCreateRequest request, List<MultipartFile> files);
 
     MessageResponse getMessage(UUID id);
 
@@ -15,7 +16,7 @@ public interface MessageService {
 
     List<MessageResponse> findAllByChannelId(UUID channelId);
 
-    MessageResponse updateMessage(MessageUpdateRequest request);
+    MessageResponse updateMessage(MessageUpdateRequest request, List<MultipartFile> files);
 
     void deleteMessage(UUID id);
 

@@ -10,18 +10,12 @@ public class UserUpdateRequest {
     private UUID id;
     private String name;
     private String email;
-    private BinaryContentRequest binaryContent;
 
-    public UserUpdateRequest(UUID id, String name, String email, BinaryContentRequest binaryContent) {
+    public UserUpdateRequest(UUID id, String name, String email) {
         validate(id, name, email);
         this.id = id;
         this.name = name;
         this.email = email;
-        this.binaryContent = binaryContent;
-    }
-
-    public UserUpdateRequest(UUID id, String name, String email) {
-        this(id, name, email, null);
     }
 
     private void validate(UUID id, String name, String email) {
