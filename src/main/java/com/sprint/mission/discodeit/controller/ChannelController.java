@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.*;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,49 +24,49 @@ public class ChannelController {
 
   private final ChannelService channelService;
 
-  @PostMapping("/public")
-  @Operation(summary = "Public Channel 생성")
+  @Operation(summary = "Public Channel 생성", operationId = "create_3")
   @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨",
-      content = @Content(schema = @Schema(implementation = ChannelResponse.class)))
+      content = @Content(schema = @Schema(implementation = Channel.class)))
+  @PostMapping("/public")
   @ResponseStatus(HttpStatus.CREATED)
   public ChannelResponse createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
     return channelService.createPublicChannel(request);
   }
 
-  @PostMapping("/private")
-  @Operation(summary = "Private Channel 생성")
+  @Operation(summary = "Private Channel 생성", operationId = "create_4")
   @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨",
-      content = @Content(schema = @Schema(implementation = ChannelResponse.class)))
+      content = @Content(schema = @Schema(implementation = Channel.class)))
+  @PostMapping("/private")
   @ResponseStatus(HttpStatus.CREATED)
   public ChannelResponse createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
     return channelService.createPrivateChannel(request);
   }
 
-  @PatchMapping("/{channelId}")
-  @Operation(summary = "Channel 정보 수정")
+  @Operation(summary = "Channel 정보 수정", operationId = "update_3")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Channel 정보가 성공적으로 수정됨",
-          content = @Content(schema = @Schema(implementation = ChannelDto.class))),
+          content = @Content(schema = @Schema(implementation = Channel.class))),
       @ApiResponse(responseCode = "400", description = "Private Channel은 수정할 수 없음",
           content = @Content(examples = @ExampleObject(value = "Private channel cannot be updated"))),
       @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음",
           content = @Content(examples = @ExampleObject(value = "Channel with id {channelId} not found")))
   })
+  @PatchMapping("/{channelId}")
   @ResponseStatus(HttpStatus.OK)
   public ChannelResponse updateChannel(
       @Parameter(description = "수정할 Channel ID", required = true)
       @PathVariable UUID channelId,
       @RequestBody ChannelUpdateRequest request) {
-    return channelService.updateChannel(request);
+    return channelService.updateChannel(channelId, request);
   }
 
-  @DeleteMapping("/{channelId}")
-  @Operation(summary = "Channel 삭제")
+  @Operation(summary = "Channel 삭제", operationId = "delete_2")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "204", description = "Channel이 성공적으로 삭제됨"),
       @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음",
           content = @Content(examples = @ExampleObject(value = "Channel with id {channelId} not found")))
   })
+  @DeleteMapping("/{channelId}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteChannel(
       @Parameter(description = "삭제할 Channel ID", required = true)
@@ -74,10 +74,9 @@ public class ChannelController {
     channelService.deleteChannel(channelId);
   }
 
+  @Operation(summary = "User가 참여 중인 Channel 목록 조회", operationId = "findAll_1")
+  @ApiResponse(responseCode = "200", description = "Channel 목록 조회 성공")
   @GetMapping
-  @Operation(summary = "User가 참여 중인 Channel 목록 조회")
-  @ApiResponse(responseCode = "200", description = "Channel 목록 조회 성공",
-      content = @Content(array = @ArraySchema(schema = @Schema(implementation = ChannelDto.class))))
   @ResponseStatus(HttpStatus.OK)
   public List<ChannelResponse> getChannels(
       @Parameter(description = "조회할 User ID", required = true)

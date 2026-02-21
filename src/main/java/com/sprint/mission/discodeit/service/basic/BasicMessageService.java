@@ -78,23 +78,12 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponse updateMessage(MessageUpdateRequest request, List<MultipartFile> files) {
-        Message message = messageRepository.findById(request.getId())
+    public MessageResponse updateMessage(UUID messageId, MessageUpdateRequest request) {
+        Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
         
         if (request.getContent() != null && !request.getContent().isBlank()) {
             message.updateContent(request.getContent());
-        }
-
-        if (files != null && !files.isEmpty()) {
-            if (message.getAttachmentIds() != null) {
-                for (UUID attachmentId : message.getAttachmentIds()) {
-                    binaryContentRepository.delete(attachmentId);
-                }
-            }
-
-            List<UUID> newAttachmentIds = saveBinaryContents(files);
-            message.updateAttachments(newAttachmentIds);
         }
 
         messageRepository.save(message);

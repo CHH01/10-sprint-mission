@@ -97,8 +97,8 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public ChannelResponse updateChannel(ChannelUpdateRequest request) {
-    Channel channel = channelRepository.findById(request.getId())
+  public ChannelResponse updateChannel(UUID channelId, ChannelUpdateRequest request) {
+    Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
 
     if ("PRIVATE".equals(channel.getType())) {

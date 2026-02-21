@@ -64,8 +64,8 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponse updateUser(UserUpdateRequest request, MultipartFile file) {
-        User user = userRepository.findById(request.getId())
+    public UserResponse updateUser(UUID userId, UserUpdateRequest request, MultipartFile file) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
         if (request.getName() != null && !request.getName().isBlank()) {

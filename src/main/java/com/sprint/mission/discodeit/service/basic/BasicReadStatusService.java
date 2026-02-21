@@ -52,8 +52,8 @@ public class BasicReadStatusService {
                 .collect(Collectors.toList());
     }
 
-    public ReadStatusResponse updateStatus(ReadStatusUpdateRequest request) {
-        ReadStatus readStatus = readStatusRepository.findById(request.getId())
+    public ReadStatusResponse updateStatus(UUID readStatusId, ReadStatusUpdateRequest request) {
+        ReadStatus readStatus = readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 읽기 상태입니다."));
         readStatus.updateLastReadAt();
         readStatusRepository.save(readStatus);

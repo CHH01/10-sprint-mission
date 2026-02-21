@@ -57,10 +57,10 @@ public class BasicUserStatusService {
         return userStatusMapper.toResponse(userStatus);
     }
 
-    public UserStatusResponse updateByUserId(UUID userId) {
+    public UserStatusResponse updateByUserId(UUID userId, UserStatusUpdateRequest request) {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
-        userStatus.updateLastSeen(Instant.now());
+        userStatus.updateLastSeen(request.getLastSeen());
         userStatusRepository.save(userStatus);
         return userStatusMapper.toResponse(userStatus);
     }
