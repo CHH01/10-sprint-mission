@@ -1,13 +1,13 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.UserStatusResponse;
+import com.sprint.mission.discodeit.dto.UserStatusDto;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserStatusMapper {
-    public UserStatusResponse toResponse(UserStatus userStatus) {
-        return new UserStatusResponse(
+    public UserStatusDto toDto(UserStatus userStatus) {
+        return new UserStatusDto(
                 userStatus.getId(),
                 userStatus.getUserId(),
                 userStatus.getLastSeen(),

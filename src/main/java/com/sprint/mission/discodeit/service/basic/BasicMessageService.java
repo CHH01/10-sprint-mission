@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.MessageResponse;
+import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.dto.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
@@ -31,7 +31,7 @@ public class BasicMessageService implements MessageService {
     private final MessageMapper messageMapper;
 
     @Override
-    public MessageResponse createMessage(MessageCreateRequest request, List<MultipartFile> files) {
+    public MessageDto createMessage(MessageCreateRequest request, List<MultipartFile> files) {
         Channel channel = channelRepository.findById(request.getChannelId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
         User user = userRepository.findById(request.getAuthorId())
@@ -52,33 +52,33 @@ public class BasicMessageService implements MessageService {
         channelRepository.save(channel);
         userRepository.save(user);
 
-        return messageMapper.toResponse(message);
+        return messageMapper.toDto(message);
     }
 
     @Override
-    public MessageResponse getMessage(UUID id) {
+    public MessageDto getMessage(UUID id) {
         Message message = messageRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
-        return messageMapper.toResponse(message);
+        return messageMapper.toDto(message);
     }
 
     @Override
-    public List<MessageResponse> getAllMessages() {
+    public List<MessageDto> getAllMessages() {
         return messageRepository.findAll().stream()
-                .map(messageMapper::toResponse)
+                .map(messageMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<MessageResponse> findAllByChannelId(UUID channelId) {
+    public List<MessageDto> findAllByChannelId(UUID channelId) {
         return messageRepository.findAll().stream()
                 .filter(message -> message.getChannelId().equals(channelId))
-                .map(messageMapper::toResponse)
+                .map(messageMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public MessageResponse updateMessage(UUID messageId, MessageUpdateRequest request) {
+    public MessageDto updateMessage(UUID messageId, MessageUpdateRequest request) {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
         
@@ -87,7 +87,7 @@ public class BasicMessageService implements MessageService {
         }
 
         messageRepository.save(message);
-        return messageMapper.toResponse(message);
+        return messageMapper.toDto(message);
     }
 
     private List<UUID> saveBinaryContents(List<MultipartFile> files) {
@@ -137,10 +137,10 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public List<MessageResponse> getMessagesByUserId(UUID userId) {
+    public List<MessageDto> getMessagesByUserId(UUID userId) {
         return messageRepository.findAll().stream()
                 .filter(message -> message.getAuthorId().equals(userId))
-                .map(messageMapper::toResponse)
+                .map(messageMapper::toDto)
                 .collect(Collectors.toList());
     }
 }

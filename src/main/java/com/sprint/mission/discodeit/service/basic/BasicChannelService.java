@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.ChannelResponse;
+import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.dto.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.PublicChannelCreateRequest;
@@ -30,7 +30,7 @@ public class BasicChannelService implements ChannelService {
   private final ChannelMapper channelMapper;
 
   @Override
-  public ChannelResponse createPublicChannel(PublicChannelCreateRequest request) {
+  public ChannelDto createPublicChannel(PublicChannelCreateRequest request) {
     if (channelRepository.findAll().stream()
         .anyMatch(c -> c.getName() != null && c.getName().equals(request.getName()))) {
       throw new IllegalArgumentException("이미 존재하는 채널 이름입니다: " + request.getName());
@@ -38,11 +38,11 @@ public class BasicChannelService implements ChannelService {
 
     Channel channel = new Channel(request.getName(), "PUBLIC", request.getDescription());
     channelRepository.save(channel);
-    return channelMapper.toResponse(channel);
+    return channelMapper.toDto(channel);
   }
 
   @Override
-  public ChannelResponse createPrivateChannel(PrivateChannelCreateRequest request) {
+  public ChannelDto createPrivateChannel(PrivateChannelCreateRequest request) {
     Channel channel = new Channel(request.getName(), "PRIVATE", request.getDescription());
     channelRepository.save(channel);
 
@@ -59,32 +59,32 @@ public class BasicChannelService implements ChannelService {
         readStatusRepository.save(readStatus);
       }
     }
-    return channelMapper.toResponse(channelRepository.findById(channel.getId()).orElse(channel));
+    return channelMapper.toDto(channelRepository.findById(channel.getId()).orElse(channel));
   }
 
   @Override
-  public ChannelResponse getChannel(UUID id) {
+  public ChannelDto getChannel(UUID id) {
     Channel channel = channelRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
-    return channelMapper.toResponse(channel);
+    return channelMapper.toDto(channel);
   }
 
   @Override
-  public List<ChannelResponse> getAllChannels() {
+  public List<ChannelDto> getAllChannels() {
     return channelRepository.findAll().stream()
-        .map(channelMapper::toResponse)
+        .map(channelMapper::toDto)
         .collect(Collectors.toList());
   }
 
   @Override
-  public List<ChannelResponse> findAllByUserId(UUID userId) {
+  public List<ChannelDto> findAllByUserId(UUID userId) {
     userRepository.findById(userId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
     return channelRepository.findAll().stream()
         .filter(channel -> canUserAccessChannel(channel, userId))
-        .map(channelMapper::toResponse)
-        .sorted(Comparator.comparing(ChannelResponse::getLastMessageAt,
+        .map(channelMapper::toDto)
+        .sorted(Comparator.comparing(ChannelDto::lastMessageAt,
             Comparator.nullsLast(Comparator.reverseOrder())))
         .collect(Collectors.toList());
   }
@@ -97,7 +97,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public ChannelResponse updateChannel(UUID channelId, ChannelUpdateRequest request) {
+  public ChannelDto updateChannel(UUID channelId, ChannelUpdateRequest request) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
 
@@ -110,7 +110,7 @@ public class BasicChannelService implements ChannelService {
     Optional.ofNullable(request.getDescription()).ifPresent(channel::updateDescription);
 
     channelRepository.save(channel);
-    return channelMapper.toResponse(channel);
+    return channelMapper.toDto(channel);
   }
 
   @Override
@@ -135,7 +135,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  public ChannelResponse enterChannel(UUID userId, UUID channelId) {
+  public ChannelDto enterChannel(UUID userId, UUID channelId) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
     Channel channel = channelRepository.findById(channelId)
@@ -158,7 +158,7 @@ public class BasicChannelService implements ChannelService {
     ReadStatus readStatus = new ReadStatus(user.getId(), channel.getId());
     readStatusRepository.save(readStatus);
 
-    return channelMapper.toResponse(channel);
+    return channelMapper.toDto(channel);
   }
 
   @Override

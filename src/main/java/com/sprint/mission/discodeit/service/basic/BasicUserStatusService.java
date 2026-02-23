@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.UserStatusResponse;
+import com.sprint.mission.discodeit.dto.UserStatusDto;
 import com.sprint.mission.discodeit.dto.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
@@ -22,7 +22,7 @@ public class BasicUserStatusService {
     private final UserRepository userRepository;
     private final UserStatusMapper userStatusMapper;
 
-    public UserStatusResponse create(UserStatusCreateRequest request) {
+    public UserStatusDto create(UserStatusCreateRequest request) {
         if (userRepository.findById(request.getUserId()).isEmpty()) {
             throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
         }
@@ -34,35 +34,35 @@ public class BasicUserStatusService {
                 .orElseGet(() -> new UserStatus(request.getUserId(), Instant.now()));
 
         userStatusRepository.save(userStatus);
-        return userStatusMapper.toResponse(userStatus);
+        return userStatusMapper.toDto(userStatus);
     }
 
-    public UserStatusResponse find(UUID id) {
+    public UserStatusDto find(UUID id) {
         UserStatus userStatus = userStatusRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
-        return userStatusMapper.toResponse(userStatus);
+        return userStatusMapper.toDto(userStatus);
     }
 
-    public List<UserStatusResponse> findAll() {
+    public List<UserStatusDto> findAll() {
         return userStatusRepository.findAll().stream()
-                .map(userStatusMapper::toResponse)
+                .map(userStatusMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-    public UserStatusResponse update(UserStatusUpdateRequest request) {
+    public UserStatusDto update(UserStatusUpdateRequest request) {
         UserStatus userStatus = userStatusRepository.findById(request.getId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
         userStatus.updateLastSeen(request.getLastSeen());
         userStatusRepository.save(userStatus);
-        return userStatusMapper.toResponse(userStatus);
+        return userStatusMapper.toDto(userStatus);
     }
 
-    public UserStatusResponse updateByUserId(UUID userId, UserStatusUpdateRequest request) {
+    public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
         userStatus.updateLastSeen(request.getLastSeen());
         userStatusRepository.save(userStatus);
-        return userStatusMapper.toResponse(userStatus);
+        return userStatusMapper.toDto(userStatus);
     }
 
     public void delete(UUID id) {

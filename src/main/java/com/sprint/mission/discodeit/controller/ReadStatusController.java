@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.ReadStatusResponse;
+import com.sprint.mission.discodeit.dto.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.basic.BasicReadStatusService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +31,7 @@ public class ReadStatusController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "201", description = "Message 읽음 상태가 성공적으로 생성됨",
           content = @Content(
-              schema = @Schema(implementation = ReadStatusResponse.class))),
+              schema = @Schema(implementation = ReadStatusDto.class))),
       @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음",
           content = @Content(
               examples = @ExampleObject(
@@ -43,7 +43,7 @@ public class ReadStatusController {
   })
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public ReadStatusResponse createStatus(@RequestBody ReadStatusCreateRequest request) {
+  public ReadStatusDto createStatus(@RequestBody ReadStatusCreateRequest request) {
     return readStatusService.createStatus(request);
   }
 
@@ -51,7 +51,7 @@ public class ReadStatusController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Message 읽음 상태가 성공적으로 수정됨",
           content = @Content(
-              schema = @Schema(implementation = ReadStatusResponse.class))),
+              schema = @Schema(implementation = ReadStatusDto.class))),
       @ApiResponse(responseCode = "404", description = "Message 읽음 상태를 찾을 수 없음",
           content = @Content(
               examples = @ExampleObject(
@@ -59,7 +59,7 @@ public class ReadStatusController {
   })
   @PatchMapping("/{readStatusId}")
   @ResponseStatus(HttpStatus.OK)
-  public ReadStatusResponse updateStatus(
+  public ReadStatusDto updateStatus(
       @Parameter(description = "수정할 읽음 상태 ID", required = true, schema = @Schema(type = "string", format = "uuid"))
       @PathVariable UUID readStatusId,
       @RequestBody ReadStatusUpdateRequest request) {
@@ -67,9 +67,11 @@ public class ReadStatusController {
   }
 
   @Operation(summary = "User의 Message 읽음 상태 목록 조회", operationId = "findAllByUserId")
+  @ApiResponse(responseCode = "200", description = "Message 읽음 상태 목록 조회 성공",
+      content = @Content(schema = @Schema(implementation = ReadStatusDto.class)))
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
-  public List<ReadStatusResponse> getReadStatuses(@Parameter(description = "조회할 User ID", required = true, schema = @Schema(type = "string", format = "uuid")) @RequestParam UUID userId) {
+  public List<ReadStatusDto> getReadStatuses(@Parameter(description = "조회할 User ID", required = true, schema = @Schema(type = "string", format = "uuid")) @RequestParam UUID userId) {
     return readStatusService.findAllByUserId(userId);
   }
 }

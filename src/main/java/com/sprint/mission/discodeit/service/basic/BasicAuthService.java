@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.LoginRequest;
-import com.sprint.mission.discodeit.dto.UserResponse;
+import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -21,7 +21,7 @@ public class BasicAuthService {
     private final UserMapper userMapper;
     private User loggedInUser;
 
-    public UserResponse login(LoginRequest request) {
+    public UserDto login(LoginRequest request) {
         Optional<User> userOptional = userRepository.findAll().stream()
                 .filter(u -> u.getName().equals(request.getUsername()))
                 .findFirst();
@@ -38,7 +38,7 @@ public class BasicAuthService {
 
         this.loggedInUser = user;
 
-        return toResponse(user);
+        return toDto(user);
     }
 
     public void logout() {
@@ -49,18 +49,18 @@ public class BasicAuthService {
         return loggedInUser != null;
     }
 
-    public UserResponse getCurrentUser() {
+    public UserDto getCurrentUser() {
         if (loggedInUser == null) {
             return null;
         }
-        return toResponse(loggedInUser);
+        return toDto(loggedInUser);
     }
 
-    private UserResponse toResponse(User user) {
+    private UserDto toDto(User user) {
         boolean isOnline = userStatusRepository.findByUserId(user.getId())
                 .map(UserStatus::isOnline)
                 .orElse(false);
 
-        return userMapper.toResponse(user, isOnline);
+        return userMapper.toDto(user, isOnline);
     }
 }

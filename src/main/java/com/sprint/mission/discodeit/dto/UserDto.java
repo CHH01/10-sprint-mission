@@ -10,6 +10,6 @@ public record UserDto(
         String username,
         String email,
         UUID profileId,
-        Boolean online
+        Boolean isOnline
 ) {
 }

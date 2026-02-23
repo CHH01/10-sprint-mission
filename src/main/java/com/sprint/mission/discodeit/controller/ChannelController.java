@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.*;
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,26 +25,26 @@ public class ChannelController {
 
   @Operation(summary = "Public Channel 생성", operationId = "create_3")
   @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨",
-      content = @Content(schema = @Schema(implementation = Channel.class)))
+      content = @Content(schema = @Schema(implementation = ChannelDto.class)))
   @PostMapping("/public")
   @ResponseStatus(HttpStatus.CREATED)
-  public ChannelResponse createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
+  public ChannelDto createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
     return channelService.createPublicChannel(request);
   }
 
   @Operation(summary = "Private Channel 생성", operationId = "create_4")
   @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨",
-      content = @Content(schema = @Schema(implementation = Channel.class)))
+      content = @Content(schema = @Schema(implementation = ChannelDto.class)))
   @PostMapping("/private")
   @ResponseStatus(HttpStatus.CREATED)
-  public ChannelResponse createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
+  public ChannelDto createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
     return channelService.createPrivateChannel(request);
   }
 
   @Operation(summary = "Channel 정보 수정", operationId = "update_3")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Channel 정보가 성공적으로 수정됨",
-          content = @Content(schema = @Schema(implementation = Channel.class))),
+          content = @Content(schema = @Schema(implementation = ChannelDto.class))),
       @ApiResponse(responseCode = "400", description = "Private Channel은 수정할 수 없음",
           content = @Content(examples = @ExampleObject(value = "Private channel cannot be updated"))),
       @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음",
@@ -53,7 +52,7 @@ public class ChannelController {
   })
   @PatchMapping("/{channelId}")
   @ResponseStatus(HttpStatus.OK)
-  public ChannelResponse updateChannel(
+  public ChannelDto updateChannel(
       @Parameter(description = "수정할 Channel ID", required = true)
       @PathVariable UUID channelId,
       @RequestBody ChannelUpdateRequest request) {
@@ -75,10 +74,11 @@ public class ChannelController {
   }
 
   @Operation(summary = "User가 참여 중인 Channel 목록 조회", operationId = "findAll_1")
-  @ApiResponse(responseCode = "200", description = "Channel 목록 조회 성공")
+  @ApiResponse(responseCode = "200", description = "Channel 목록 조회 성공",
+      content = @Content(schema = @Schema(implementation = ChannelDto.class)))
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
-  public List<ChannelResponse> getChannels(
+  public List<ChannelDto> getChannels(
       @Parameter(description = "조회할 User ID", required = true)
       @RequestParam UUID userId) {
     return channelService.findAllByUserId(userId);
@@ -86,19 +86,19 @@ public class ChannelController {
 
   @RequestMapping(value = "/all", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public List<ChannelResponse> getAllChannels() {
+  public List<ChannelDto> getAllChannels() {
     return channelService.getAllChannels();
   }
 
   @RequestMapping(value = "/{id}", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public ChannelResponse getChannel(@PathVariable UUID id) {
+  public ChannelDto getChannel(@PathVariable UUID id) {
     return channelService.getChannel(id);
   }
 
   @RequestMapping(value = "/{channelId}/enter", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
-  public ChannelResponse enterChannel(@RequestParam UUID userId, @PathVariable UUID channelId) {
+  public ChannelDto enterChannel(@RequestParam UUID userId, @PathVariable UUID channelId) {
     return channelService.enterChannel(userId, channelId);
   }
 

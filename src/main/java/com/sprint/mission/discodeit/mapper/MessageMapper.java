@@ -1,13 +1,13 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.MessageResponse;
+import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.entity.Message;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MessageMapper {
-    public MessageResponse toResponse(Message message) {
-        return new MessageResponse(
+    public MessageDto toDto(Message message) {
+        return new MessageDto(
                 message.getId(),
                 message.getContent(),
                 message.getAuthorId(),

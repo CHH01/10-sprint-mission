@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.ReadStatusResponse;
+import com.sprint.mission.discodeit.dto.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
@@ -23,7 +23,7 @@ public class BasicReadStatusService {
     private final ChannelRepository channelRepository;
     private final ReadStatusMapper readStatusMapper;
 
-    public ReadStatusResponse createStatus(ReadStatusCreateRequest request) {
+    public ReadStatusDto createStatus(ReadStatusCreateRequest request) {
         if (!userRepository.findById(request.getUserId()).isPresent()) {
             throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
         }
@@ -32,32 +32,32 @@ public class BasicReadStatusService {
         }
 
         return readStatusRepository.findByUserIdAndChannelId(request.getUserId(), request.getChannelId())
-                .map(readStatusMapper::toResponse)
+                .map(readStatusMapper::toDto)
                 .orElseGet(() -> {
                     ReadStatus readStatus = new ReadStatus(request.getUserId(), request.getChannelId());
                     readStatusRepository.save(readStatus);
-                    return readStatusMapper.toResponse(readStatus);
+                    return readStatusMapper.toDto(readStatus);
                 });
     }
 
-    public ReadStatusResponse findStatus(UUID id) {
+    public ReadStatusDto findStatus(UUID id) {
         ReadStatus readStatus = readStatusRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 읽기 상태입니다."));
-        return readStatusMapper.toResponse(readStatus);
+        return readStatusMapper.toDto(readStatus);
     }
 
-    public List<ReadStatusResponse> findAllByUserId(UUID userId) {
+    public List<ReadStatusDto> findAllByUserId(UUID userId) {
         return readStatusRepository.findAllByUserId(userId).stream()
-                .map(readStatusMapper::toResponse)
+                .map(readStatusMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-    public ReadStatusResponse updateStatus(UUID readStatusId, ReadStatusUpdateRequest request) {
+    public ReadStatusDto updateStatus(UUID readStatusId, ReadStatusUpdateRequest request) {
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 읽기 상태입니다."));
         readStatus.updateLastReadAt();
         readStatusRepository.save(readStatus);
-        return readStatusMapper.toResponse(readStatus);
+        return readStatusMapper.toDto(readStatus);
     }
 
     public void deleteStatus(UUID id) {

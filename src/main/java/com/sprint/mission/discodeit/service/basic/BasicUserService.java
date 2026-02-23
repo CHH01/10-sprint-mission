@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContentRequest;
 import com.sprint.mission.discodeit.dto.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.UserResponse;
+import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.dto.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -30,7 +30,7 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
 
     @Override
-    public UserResponse createUser(UserCreateRequest request, MultipartFile file) {
+    public UserDto createUser(UserCreateRequest request, MultipartFile file) {
         if (userRepository.findAll().stream().anyMatch(u -> u.getName().equals(request.getName()))) {
             throw new IllegalArgumentException("이미 존재하는 이름입니다: " + request.getName());
         }
@@ -46,25 +46,25 @@ public class BasicUserService implements UserService {
         UserStatus userStatus = new UserStatus(user.getId(), Instant.now());
         userStatusRepository.save(userStatus);
 
-        return toResponse(user);
+        return toDto(user);
     }
 
     @Override
-    public UserResponse getUser(UUID id) {
+    public UserDto getUser(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
-        return toResponse(user);
+        return toDto(user);
     }
 
     @Override
-    public List<UserResponse> getAllUsers() {
+    public List<UserDto> getAllUsers() {
         return userRepository.findAll().stream()
-                .map(this::toResponse)
+                .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public UserResponse updateUser(UUID userId, UserUpdateRequest request, MultipartFile file) {
+    public UserDto updateUser(UUID userId, UserUpdateRequest request, MultipartFile file) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
@@ -89,7 +89,7 @@ public class BasicUserService implements UserService {
             channelRepository.findById(c.getId()).ifPresent(channelRepository::save);
         }
         
-        return toResponse(user);
+        return toDto(user);
     }
 
     private UUID saveBinaryContent(MultipartFile file) {
@@ -144,12 +144,12 @@ public class BasicUserService implements UserService {
         userRepository.delete(id);
     }
 
-    private UserResponse toResponse(User user) {
+    private UserDto toDto(User user) {
         boolean isOnline = userStatusRepository.findByUserId(user.getId())
                 .map(UserStatus::isOnline)
                 .orElse(false);
 
-        return userMapper.toResponse(user, isOnline);
+        return userMapper.toDto(user, isOnline);
     }
 
     private void validateContentType(String contentType) {
