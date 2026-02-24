@@ -60,7 +60,11 @@ public class BasicUserStatusService {
     public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
-        userStatus.updateLastSeen(request.getLastSeen());
+        if (request.getLastSeen() == null) {
+            userStatus.updateLastSeen(Instant.now());
+        } else {
+            userStatus.updateLastSeen(request.getLastSeen());
+        }
         userStatusRepository.save(userStatus);
         return userStatusMapper.toDto(userStatus);
     }

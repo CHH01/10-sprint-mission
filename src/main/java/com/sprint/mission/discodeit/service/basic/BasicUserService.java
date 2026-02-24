@@ -85,9 +85,7 @@ public class BasicUserService implements UserService {
 
         userRepository.save(user);
 
-        for (Channel c : new ArrayList<>(user.getChannels())) {
-            channelRepository.findById(c.getId()).ifPresent(channelRepository::save);
-        }
+
         
         return toDto(user);
     }
