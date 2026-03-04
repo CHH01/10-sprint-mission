@@ -12,18 +12,12 @@ public class MessageCreateRequest {
     private UUID channelId;
     private UUID authorId;
     private String content;
-    private List<BinaryContentRequest> binaryContents;
 
-    public MessageCreateRequest(UUID channelId, UUID authorId, String content, List<BinaryContentRequest> binaryContents) {
+    public MessageCreateRequest(UUID channelId, UUID authorId, String content) {
         validate(channelId, authorId, content);
         this.channelId = channelId;
         this.authorId = authorId;
         this.content = content;
-        this.binaryContents = binaryContents;
-    }
-
-    public MessageCreateRequest(UUID channelId, UUID authorId, String content) {
-        this(channelId, authorId, content, null);
     }
 
     private void validate(UUID channelId, UUID authorId, String content) {

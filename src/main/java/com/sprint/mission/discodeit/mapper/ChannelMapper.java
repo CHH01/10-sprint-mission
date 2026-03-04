@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.ChannelResponse;
+import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Component
 public class ChannelMapper {
 
-    public ChannelResponse toResponse(Channel channel) {
+    public ChannelDto toDto(Channel channel) {
         List<UUID> participantIds = null;
         
         if ("PRIVATE".equals(channel.getType())) {
@@ -29,7 +29,7 @@ public class ChannelMapper {
                 .max(Comparator.naturalOrder())
                 .orElse(channel.getCreatedAt());
 
-        return new ChannelResponse(
+        return new ChannelDto(
                 channel.getId(),
                 channel.getName(),
                 channel.getType(),

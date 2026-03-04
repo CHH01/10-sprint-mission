@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContentRequest;
-import com.sprint.mission.discodeit.dto.BinaryContentResponse;
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -18,20 +18,20 @@ public class BasicBinaryContentService{
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
 
-    public BinaryContentResponse create(BinaryContentRequest request) {
+    public BinaryContentDto create(BinaryContentRequest request) {
         BinaryContent binaryContent = new BinaryContent(
                 request.getContent(),
                 request.getFileName(),
                 request.getContentType()
         );
         binaryContentRepository.save(binaryContent);
-        return binaryContentMapper.toResponse(binaryContent);
+        return binaryContentMapper.toDto(binaryContent);
     }
 
-    public BinaryContentResponse find(UUID id) {
+    public BinaryContentDto find(UUID id) {
         BinaryContent binaryContent = binaryContentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 컨텐츠입니다."));
-        return binaryContentMapper.toResponse(binaryContent);
+        return binaryContentMapper.toDto(binaryContent);
     }
 
     public BinaryContent findContent(UUID id) {
@@ -39,9 +39,9 @@ public class BasicBinaryContentService{
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 컨텐츠입니다."));
     }
 
-    public List<BinaryContentResponse> findAllByIdIn(List<UUID> ids) {
+    public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
         return binaryContentRepository.findAllByIdIn(ids).stream()
-                .map(binaryContentMapper::toResponse)
+                .map(binaryContentMapper::toDto)
                 .collect(Collectors.toList());
     }
 

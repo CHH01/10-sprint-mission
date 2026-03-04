@@ -3,14 +3,13 @@ package com.sprint.mission.discodeit.dto;
 import java.time.Instant;
 import java.util.UUID;
 
-public record UserDto(
+public record BinaryContentDto(
     UUID id,
     Instant createdAt,
-    Instant updatedAt,
-    String username,
-    String email,
-    UUID profileId,
-    Boolean online
+    String fileName,
+    long size,
+    String contentType,
+    String bytes
 ) {
 
 }
