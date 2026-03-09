@@ -9,10 +9,10 @@ import java.util.UUID;
 @NoArgsConstructor
 public class UserStatusUpdateRequest {
     private UUID id;
-    private Instant lastSeen;
+    private Instant lastActiveAt;
 
-    public UserStatusUpdateRequest(UUID id, Instant lastSeen) {
+    public UserStatusUpdateRequest(UUID id, Instant lastActiveAt) {
         this.id = id;
-        this.lastSeen = lastSeen;
+        this.lastActiveAt = lastActiveAt;
     }
 }

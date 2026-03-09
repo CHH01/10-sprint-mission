@@ -2,25 +2,15 @@ package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import java.util.List;
 
-import java.util.Base64;
+@Mapper(componentModel = "spring")
+public abstract class BinaryContentMapper {
 
-@Component
-public class BinaryContentMapper {
+    @Mapping(target = "bytes", ignore = true)
+    public abstract BinaryContentDto toDto(BinaryContent binaryContent);
 
-  public BinaryContentDto toDto(BinaryContent binaryContent) {
-    String base64 = (binaryContent.getBytes() == null)
-        ? null
-        : Base64.getEncoder().encodeToString(binaryContent.getBytes());
-
-    return new BinaryContentDto(
-        binaryContent.getId(),
-        binaryContent.getCreatedAt(),
-        binaryContent.getFileName(),
-        binaryContent.getSize(),
-        binaryContent.getContentType(),
-        base64
-    );
-  }
+    public abstract List<BinaryContentDto> toDto(List<BinaryContent> binaryContents);
 }

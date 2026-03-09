@@ -9,11 +9,11 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BasicAuthService {
 
     private final UserRepository userRepository;
@@ -21,16 +21,10 @@ public class BasicAuthService {
     private final UserMapper userMapper;
     private User loggedInUser;
 
+    @Transactional
     public UserDto login(LoginRequest request) {
-        Optional<User> userOptional = userRepository.findAll().stream()
-                .filter(u -> u.getName().equals(request.getUsername()))
-                .findFirst();
-
-        if (userOptional.isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
-        }
-
-        User user = userOptional.get();
+        User user = userRepository.findByName(request.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
         if (user.getPassword() == null || !user.getPassword().equals(request.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");

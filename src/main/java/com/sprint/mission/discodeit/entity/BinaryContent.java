@@ -1,49 +1,59 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import java.util.Objects;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-public class BinaryContent implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private final UUID id;
-    private final byte[] bytes;
-    private final String fileName;
-    private final long size;
-    private final String contentType;
-    private final Instant createdAt;
+@Entity
+@Table(name = "binary_contents")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class BinaryContent extends BaseEntity {
 
-    public BinaryContent(byte[] bytes, String fileName, String contentType) {
-        this.id = UUID.randomUUID();
-        this.bytes = bytes;
-        this.fileName = fileName;
-        this.contentType = contentType;
-        this.size = bytes.length;
-        this.createdAt = Instant.now();
-    }
+  @Column(name = "file_name", nullable = false)
+  private String fileName;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        BinaryContent that = (BinaryContent) o;
-        return java.util.Objects.equals(id, that.id);
-    }
+  @Column(name = "size", nullable = false)
+  private long size;
 
-    @Override
-    public int hashCode() {
-        return java.util.Objects.hash(id);
-    }
+  @Column(name = "content_type", nullable = false, length = 100)
+  private String contentType;
 
-    @Override
-    public String toString() {
-        return "BinaryContent{" +
-                "id=" + id +
-                ", fileName='" + fileName + '\'' +
-                ", size=" + size +
-                ", contentType='" + contentType + '\'' +
-                '}';
-    }
+  public BinaryContent(String fileName, String contentType, long size) {
+    this.fileName = fileName;
+    this.contentType = contentType;
+    this.size = size;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+      if (this == o) {
+          return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+          return false;
+      }
+    BinaryContent that = (BinaryContent) o;
+    return Objects.equals(getId(), that.getId());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getId());
+  }
+
+  @Override
+  public String toString() {
+    return "BinaryContent{" +
+        "id=" + getId() +
+        ", fileName='" + fileName + '\'' +
+        ", size=" + size +
+        ", contentType='" + contentType + '\'' +
+        '}';
+  }
 }
