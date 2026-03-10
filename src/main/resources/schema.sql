@@ -2,7 +2,6 @@ CREATE TABLE binary_contents
 (
     id           uuid PRIMARY KEY,
     created_at   timestamptz  NOT NULL DEFAULT now(),
-    updated_at   timestamptz,
     file_name    varchar(255) NOT NULL,
     size         BIGINT       NOT NULL,
     content_type varchar(100) NOT NULL

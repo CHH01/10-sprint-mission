@@ -30,8 +30,7 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional
   public ChannelDto createPublicChannel(PublicChannelCreateRequest request) {
-    if (channelRepository.findAll().stream()
-        .anyMatch(c -> c.getName() != null && c.getName().equals(request.getName()))) {
+    if (channelRepository.existsByName(request.getName())) {
       throw new IllegalArgumentException("이미 존재하는 채널 이름입니다: " + request.getName());
     }
 

@@ -48,6 +48,7 @@ public class BasicUserService implements UserService {
     userRepository.save(user);
 
     UserStatus userStatus = new UserStatus(user, Instant.now());
+    user.updateStatus(userStatus);
     userStatusRepository.save(userStatus);
 
     return toDto(user);
