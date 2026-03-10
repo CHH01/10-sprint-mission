@@ -30,10 +30,14 @@ public class ReadStatus extends BaseUpdatableEntity {
   @Column(name = "last_read_at")
   private Instant lastReadAt;
 
-  public ReadStatus(User user, Channel channel) {
+  public ReadStatus(User user, Channel channel, Instant lastReadAt) {
     this.user = user;
     this.channel = channel;
-    this.lastReadAt = Instant.now();
+    this.lastReadAt = lastReadAt != null ? lastReadAt : Instant.now();
+  }
+
+  public ReadStatus(User user, Channel channel) {
+    this(user, channel, Instant.now());
   }
 
   public UUID getUserId() {
@@ -42,6 +46,10 @@ public class ReadStatus extends BaseUpdatableEntity {
 
   public UUID getChannelId() {
     return channel != null ? channel.getId() : null;
+  }
+
+  public void updateLastReadAt(Instant lastReadAt) {
+    this.lastReadAt = lastReadAt != null ? lastReadAt : Instant.now();
   }
 
   public void updateLastReadAt() {

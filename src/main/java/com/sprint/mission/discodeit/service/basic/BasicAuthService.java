@@ -51,7 +51,7 @@ public class BasicAuthService {
     }
 
     private UserDto toDto(User user) {
-        boolean isOnline = userStatusRepository.findByUserId(user.getId())
+        boolean isOnline = userStatusRepository.findByUser_Id(user.getId())
                 .map(UserStatus::isOnline)
                 .orElse(false);
 

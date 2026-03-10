@@ -1,27 +1,26 @@
 package com.sprint.mission.discodeit.dto;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 public class UserCreateRequest {
-
-  @JsonAlias("username")
-  private String name;
+  private String username;
   private String email;
   private String password;
 
-  public UserCreateRequest(String name, String email, String password) {
-    validate(name, email, password);
-    this.name = name;
+  public UserCreateRequest(String username, String email, String password) {
+    validate(username, email, password);
+    this.username = username;
     this.email = email;
     this.password = password;
   }
 
-  private void validate(String name, String email, String password) {
-      if (name == null || name.isBlank()) {
+  private void validate(String username, String email, String password) {
+      if (username == null || username.isBlank()) {
           throw new IllegalArgumentException("이름은 필수입니다.");
       }
       if (email == null || email.isBlank()) {

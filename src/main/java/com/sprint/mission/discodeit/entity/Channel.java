@@ -26,92 +26,80 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Channel extends BaseUpdatableEntity {
 
-    @Column(nullable = false, length = 100)
-    private String name;
+  @Column(nullable = false, length = 100)
+  private String name;
 
-    @Column(nullable = false, length = 10)
-    @Enumerated(EnumType.STRING)
-    private ChannelType type;
+  @Column(nullable = false, length = 10)
+  @Enumerated(EnumType.STRING)
+  private ChannelType type;
 
-    @Column(length = 500)
-    private String description;
+  @Column(length = 500)
+  private String description;
 
-    @ManyToMany
-    @JoinTable(
-        name = "channel_users",
-        joinColumns = @JoinColumn(name = "channel_id"),
-        inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private final Set<User> users = new HashSet<>();
+  @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
+  private final List<Message> messages = new ArrayList<>();
 
-    @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final List<Message> messages = new ArrayList<>();
+  @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
+  private final List<ReadStatus> readStatuses = new ArrayList<>();
 
-    @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final List<ReadStatus> readStatuses = new ArrayList<>();
+  public Channel(String name, ChannelType type, String description) {
+    this.name = name;
+    this.type = type;
+    this.description = description;
+  }
 
-    public Channel(String name, ChannelType type, String description) {
-        this.name = name;
-        this.type = type;
-        this.description = description;
-    }
+  public Channel(String name, ChannelType type) {
+    this(name, type, null);
+  }
 
-    public Channel(String name, ChannelType type) {
-        this(name, type, null);
-    }
+  public void addMessage(Message message) {
+    messages.add(message);
+  }
 
-    public void addMessage(Message message) {
-        messages.add(message);
-    }
+  public void addReadStatus(ReadStatus readStatus) {
+    readStatuses.add(readStatus);
+  }
 
-    public void addUser(User user) {
-        users.add(user);
-    }
+  public void removeReadStatus(ReadStatus readStatus) {
+    readStatuses.remove(readStatus);
+  }
 
-    public void removeUser(User user) {
-        users.remove(user);
-    }
+  public void updateName(String name) {
+    this.name = name;
+  }
 
-    public void addReadStatus(ReadStatus readStatus) {
-        readStatuses.add(readStatus);
-    }
+  public void updateType(ChannelType type) {
+    this.type = type;
+  }
 
-    public void removeReadStatus(ReadStatus readStatus) {
-        readStatuses.remove(readStatus);
-    }
+  public void updateDescription(String description) {
+    this.description = description;
+  }
 
-    public void updateName(String name) {
-        this.name = name;
-    }
+  public void removeMessage(Message message) {
+    messages.remove(message);
+  }
 
-    public void updateType(ChannelType type) {
-        this.type = type;
-    }
+  @Override
+  public String toString() {
+    return "채널[이름: " + name +
+        ", 타입: " + type + "]";
+  }
 
-    public void updateDescription(String description) {
-        this.description = description;
-    }
+  @Override
+  public boolean equals(Object o) {
+      if (this == o) {
+          return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+          return false;
+      }
+    Channel channel = (Channel) o;
+    return Objects.equals(getId(), channel.getId());
+  }
 
-    public void removeMessage(Message message) {
-        messages.remove(message);
-    }
-
-    @Override
-    public String toString() {
-        return "채널[이름: " + name +
-                ", 타입: " + type + "]";
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Channel channel = (Channel) o;
-        return Objects.equals(getId(), channel.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getId());
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(getId());
+  }
 }

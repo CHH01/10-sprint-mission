@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.dto.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,11 +14,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,6 +30,7 @@ import java.util.UUID;
 public class MessageController {
 
   private final MessageService messageService;
+  private final PageResponseMapper pageResponseMapper;
 
   @Operation(summary = "Message 생성", operationId = "create_2")
   @ApiResponses(value = {
@@ -49,10 +54,15 @@ public class MessageController {
       content = @Content(schema = @Schema(implementation = MessageDto.class)))
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
-  public List<MessageDto> getMessages(
+  public PageResponse<MessageDto> getMessages(
       @Parameter(description = "조회할 Channel ID", required = true)
-      @RequestParam UUID channelId) {
-    return messageService.findAllByChannelId(channelId);
+      @RequestParam UUID channelId,
+      @Parameter(description = "마지막으로 본 메시지의 생성 시간 (커서)")
+      @RequestParam(required = false) Instant cursor,
+      @Parameter(description = "페이지 크기")
+      @RequestParam(defaultValue = "50") int size) {
+    Slice<MessageDto> messageSlice = messageService.findAllByChannelId(channelId, cursor, size);
+    return pageResponseMapper.fromSlice(messageSlice, MessageDto::createdAt);
   }
 
   @Operation(summary = "Message 내용 수정", operationId = "update_2")

@@ -55,7 +55,7 @@ public class ChannelController {
   public ChannelDto updateChannel(
       @Parameter(description = "수정할 Channel ID", required = true)
       @PathVariable UUID channelId,
-      @RequestBody ChannelUpdateRequest request) {
+      @RequestBody PublicChannelUpdateRequest request) {
     return channelService.updateChannel(channelId, request);
   }
 

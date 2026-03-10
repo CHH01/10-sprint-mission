@@ -29,18 +29,18 @@ public class BasicReadStatusService {
 
     @Transactional
     public ReadStatusDto createStatus(ReadStatusCreateRequest request) {
+        if (readStatusRepository.findByUser_IdAndChannel_Id(request.getUserId(), request.getChannelId()).isPresent()) {
+            throw new IllegalArgumentException("ReadStatus with userId " + request.getUserId() + " and channelId " + request.getChannelId() + " already exists");
+        }
+
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
         Channel channel = channelRepository.findById(request.getChannelId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
 
-        return readStatusRepository.findByUserIdAndChannelId(request.getUserId(), request.getChannelId())
-                .map(readStatusMapper::toDto)
-                .orElseGet(() -> {
-                    ReadStatus readStatus = new ReadStatus(user, channel);
-                    readStatusRepository.save(readStatus);
-                    return readStatusMapper.toDto(readStatus);
-                });
+        ReadStatus readStatus = new ReadStatus(user, channel, request.getLastReadAt());
+        readStatusRepository.save(readStatus);
+        return readStatusMapper.toDto(readStatus);
     }
 
     public ReadStatusDto findStatus(UUID id) {
@@ -50,16 +50,22 @@ public class BasicReadStatusService {
     }
 
     public List<ReadStatusDto> findAllByUserId(UUID userId) {
-        return readStatusRepository.findAllByUserId(userId).stream()
+        return readStatusRepository.findAllByUser_Id(userId).stream()
                 .map(readStatusMapper::toDto)
                 .collect(Collectors.toList());
-  }
+    }
 
     @Transactional
     public ReadStatusDto updateStatus(UUID readStatusId, ReadStatusUpdateRequest request) {
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 읽기 상태입니다."));
-        readStatus.updateLastReadAt();
+        
+        if (request.getNewLastReadAt() != null) {
+            readStatus.updateLastReadAt(request.getNewLastReadAt());
+        } else {
+            readStatus.updateLastReadAt();
+        }
+        
         return readStatusMapper.toDto(readStatus);
     }
 

@@ -7,6 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class MessageUpdateRequest {
-    private String newContent;
+public class PublicChannelUpdateRequest {
+    private String newName;
+    private String newDescription;
 }

@@ -8,10 +8,16 @@ import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +37,7 @@ public class BasicMessageService implements MessageService {
   private final BinaryContentRepository binaryContentRepository;
   private final MessageMapper messageMapper;
   private final BinaryContentStorage binaryContentStorage;
+  private final ReadStatusRepository readStatusRepository;
 
   @Override
   @Transactional
@@ -40,10 +47,9 @@ public class BasicMessageService implements MessageService {
     User user = userRepository.findById(request.getAuthorId())
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-    if (!channel.getUsers().contains(user)) {
+    if (readStatusRepository.findByUser_IdAndChannel_Id(user.getId(), channel.getId()).isEmpty()) {
       if (ChannelType.PUBLIC.equals(channel.getType())) {
-        channel.addUser(user);
-        user.addChannel(channel);
+        readStatusRepository.save(new ReadStatus(user, channel));
       } else {
         throw new IllegalArgumentException("채널에 먼저 입장해야 메시지를 남길 수 있습니다.");
       }
@@ -53,9 +59,6 @@ public class BasicMessageService implements MessageService {
 
     Message message = new Message(channel, user, request.getContent());
     attachments.forEach(message::addAttachment);
-
-    channel.addMessage(message);
-    user.addMessage(message);
 
     messageRepository.save(message);
 
@@ -77,10 +80,14 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public List<MessageDto> findAllByChannelId(UUID channelId) {
-    return messageRepository.findAllByChannelId(channelId).stream()
-        .map(messageMapper::toDto)
-        .collect(Collectors.toList());
+  public Slice<MessageDto> findAllByChannelId(UUID channelId, Instant cursor, int size) {
+    Pageable pageable = PageRequest.of(0, size, Sort.by("createdAt").descending());
+    if (cursor != null) {
+      return messageRepository.findByChannel_IdAndCreatedAtBefore(channelId, cursor, pageable)
+          .map(messageMapper::toDto);
+    }
+    return messageRepository.findByChannel_Id(channelId, pageable)
+        .map(messageMapper::toDto);
   }
 
   @Override
@@ -89,8 +96,8 @@ public class BasicMessageService implements MessageService {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
 
-    if (request.getContent() != null && !request.getContent().isBlank()) {
-      message.updateContent(request.getContent());
+    if (request.getNewContent() != null && !request.getNewContent().isBlank()) {
+      message.updateContent(request.getNewContent());
     }
 
     return messageMapper.toDto(message);
@@ -108,7 +115,6 @@ public class BasicMessageService implements MessageService {
                 file.getContentType(),
                 file.getSize()
             );
-            binaryContentRepository.save(binaryContent);
             binaryContentStorage.put(binaryContent.getId(), file.getBytes());
             attachments.add(binaryContent);
           } catch (IOException e) {
@@ -130,20 +136,12 @@ public class BasicMessageService implements MessageService {
       binaryContentRepository.delete(attachment);
     }
 
-    channelRepository.findById(message.getChannelId()).ifPresent(channel -> {
-      channel.removeMessage(message);
-    });
-
-    userRepository.findById(message.getAuthorId()).ifPresent(user -> {
-      user.removeMessage(message);
-    });
-
     messageRepository.delete(message);
   }
 
   @Override
   public List<MessageDto> getMessagesByUserId(UUID userId) {
-    return messageRepository.findAllByAuthorId(userId).stream()
+    return messageRepository.findAllByAuthor_Id(userId).stream()
         .map(messageMapper::toDto)
         .collect(Collectors.toList());
   }

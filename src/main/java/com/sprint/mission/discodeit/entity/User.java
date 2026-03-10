@@ -35,7 +35,7 @@ public class User extends BaseUpdatableEntity {
   @Column(nullable = false, length = 60)
   private String password;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "profile_id", unique = true)
   private BinaryContent profile;
 
@@ -47,9 +47,6 @@ public class User extends BaseUpdatableEntity {
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private final List<ReadStatus> readStatuses = new ArrayList<>();
-
-  @ManyToMany(mappedBy = "users")
-  private final Set<Channel> channels = new HashSet<>();
 
   public User(String name, String email, String password, BinaryContent profile) {
     this.name = name;
@@ -80,14 +77,6 @@ public class User extends BaseUpdatableEntity {
 
   public void removeReadStatus(ReadStatus readStatus) {
     readStatuses.remove(readStatus);
-  }
-
-  public void addChannel(Channel channel) {
-    this.channels.add(channel);
-  }
-
-  public void removeChannel(Channel channel) {
-    this.channels.remove(channel);
   }
 
   public void updateName(String name) {

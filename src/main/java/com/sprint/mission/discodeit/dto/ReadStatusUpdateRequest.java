@@ -1,15 +1,13 @@
 package com.sprint.mission.discodeit.dto;
 
-import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import java.time.Instant;
 
 @Getter
+@Setter
 @NoArgsConstructor
 public class ReadStatusUpdateRequest {
-    private UUID id;
-
-    public ReadStatusUpdateRequest(UUID id) {
-        this.id = id;
-    }
+    private Instant newLastReadAt;
 }

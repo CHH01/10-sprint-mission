@@ -35,8 +35,8 @@ public class BasicUserService implements UserService {
   @Override
   @Transactional
   public UserDto createUser(UserCreateRequest request, MultipartFile file) {
-    if (userRepository.existsByName(request.getName())) {
-      throw new IllegalArgumentException("이미 존재하는 이름입니다: " + request.getName());
+    if (userRepository.existsByName(request.getUsername())) {
+      throw new IllegalArgumentException("이미 존재하는 이름입니다: " + request.getUsername());
     }
     if (userRepository.existsByEmail(request.getEmail())) {
       throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + request.getEmail());
@@ -44,7 +44,7 @@ public class BasicUserService implements UserService {
 
     BinaryContent profile = saveBinaryContent(file);
 
-    User user = new User(request.getName(), request.getEmail(), request.getPassword(), profile);
+    User user = new User(request.getUsername(), request.getEmail(), request.getPassword(), profile);
     userRepository.save(user);
 
     UserStatus userStatus = new UserStatus(user, Instant.now());
@@ -94,9 +94,6 @@ public class BasicUserService implements UserService {
     }
 
     if (file != null && !file.isEmpty()) {
-      if (user.getProfile() != null) {
-        binaryContentRepository.delete(user.getProfile());
-      }
       BinaryContent profile = saveBinaryContent(file);
       user.updateProfile(profile);
     }
@@ -117,7 +114,6 @@ public class BasicUserService implements UserService {
           file.getContentType(),
           file.getSize()
       );
-      binaryContentRepository.save(content);
       binaryContentStorage.put(content.getId(), file.getBytes());
       return content;
     } catch (IOException e) {
@@ -130,12 +126,6 @@ public class BasicUserService implements UserService {
   public void deleteUser(UUID id) {
     User user = userRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
-
-    for (Channel c : new ArrayList<>(user.getChannels())) {
-      channelRepository.findById(c.getId()).ifPresent(channel -> {
-        channel.removeUser(user);
-      });
-    }
 
     if (user.getProfile() != null) {
       binaryContentRepository.delete(user.getProfile());

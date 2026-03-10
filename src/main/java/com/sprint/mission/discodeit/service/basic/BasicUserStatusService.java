@@ -30,7 +30,7 @@ public class BasicUserStatusService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        UserStatus userStatus = userStatusRepository.findByUserId(request.getUserId())
+        UserStatus userStatus = userStatusRepository.findByUser_Id(request.getUserId())
                 .map(existing -> {
                     existing.updateLastActiveAt(Instant.now());
                     return existing;
@@ -57,20 +57,18 @@ public class BasicUserStatusService {
 
     @Transactional
     public UserStatusDto update(UserStatusUpdateRequest request) {
-        UserStatus userStatus = userStatusRepository.findById(request.getId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
-        userStatus.updateLastActiveAt(request.getLastActiveAt());
-        return userStatusMapper.toDto(userStatus);
+        return null;
     }
 
     @Transactional
     public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
-        UserStatus userStatus = userStatusRepository.findByUserId(userId)
+        UserStatus userStatus = userStatusRepository.findByUser_Id(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
-        if (request.getLastActiveAt() == null) {
-            userStatus.updateLastActiveAt(Instant.now());
+        
+        if (request.getNewLastActiveAt() != null) {
+            userStatus.updateLastActiveAt(request.getNewLastActiveAt());
         } else {
-            userStatus.updateLastActiveAt(request.getLastActiveAt());
+            userStatus.updateLastActiveAt(Instant.now());
         }
         return userStatusMapper.toDto(userStatus);
     }

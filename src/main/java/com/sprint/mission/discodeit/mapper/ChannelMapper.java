@@ -32,11 +32,11 @@ public abstract class ChannelMapper {
     public abstract ChannelDto toDto(Channel channel);
 
     protected List<UserDto> mapParticipants(Channel channel) {
-        if (channel.getUsers() == null) {
+        if (channel.getReadStatuses() == null) {
             return List.of();
         }
-        return channel.getUsers().stream()
-                .map(userMapper::toDto)
+        return channel.getReadStatuses().stream()
+                .map(rs -> userMapper.toDto(rs.getUser()))
                 .collect(Collectors.toList());
     }
 

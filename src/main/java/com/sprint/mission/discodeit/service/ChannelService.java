@@ -10,7 +10,7 @@ public interface ChannelService {
     ChannelDto getChannel(UUID id);
     List<ChannelDto> getAllChannels();
     List<ChannelDto> findAllByUserId(UUID userId);
-    ChannelDto updateChannel(UUID channelId, ChannelUpdateRequest request);
+    ChannelDto updateChannel(UUID channelId, PublicChannelUpdateRequest request);
     void deleteChannel(UUID id);
     
     ChannelDto enterChannel(UUID userId, UUID channelId);
