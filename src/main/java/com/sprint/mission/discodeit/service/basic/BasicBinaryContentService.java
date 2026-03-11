@@ -18,47 +18,43 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BasicBinaryContentService {
-    private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentMapper binaryContentMapper;
-    private final BinaryContentStorage binaryContentStorage;
 
-    @Transactional
-    public BinaryContentDto create(BinaryContentRequest request) {
-        BinaryContent binaryContent = new BinaryContent(
-                request.getFileName(),
-                request.getContentType(),
-                request.getContent() != null ? request.getContent().length : 0
-        );
-        binaryContentRepository.save(binaryContent);
+  private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentMapper binaryContentMapper;
+  private final BinaryContentStorage binaryContentStorage;
 
-        if (request.getContent() != null) {
-            binaryContentStorage.put(binaryContent.getId(), request.getContent());
-        }
+  @Transactional
+  public BinaryContentDto create(BinaryContentRequest request) {
+    BinaryContent binaryContent = new BinaryContent(
+        request.getFileName(),
+        request.getContentType(),
+        request.getContent() != null ? request.getContent().length : 0
+    );
+    binaryContentRepository.save(binaryContent);
 
-        return binaryContentMapper.toDto(binaryContent);
+    if (request.getContent() != null) {
+      binaryContentStorage.put(binaryContent.getId(), request.getContent());
     }
 
-    public BinaryContentDto find(UUID id) {
-        BinaryContent binaryContent = binaryContentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 컨텐츠입니다."));
-        return binaryContentMapper.toDto(binaryContent);
-    }
+    return binaryContentMapper.toDto(binaryContent);
+  }
 
-    public BinaryContent findContent(UUID id) {
-        return binaryContentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 컨텐츠입니다."));
-    }
+  public BinaryContentDto find(UUID id) {
+    BinaryContent binaryContent = binaryContentRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 컨텐츠입니다."));
+    return binaryContentMapper.toDto(binaryContent);
+  }
 
-    public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
-        return binaryContentRepository.findAllById(ids).stream()
-                .map(binaryContentMapper::toDto)
-                .collect(Collectors.toList());
-    }
+  public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
+    return binaryContentRepository.findAllById(ids).stream()
+        .map(binaryContentMapper::toDto)
+        .collect(Collectors.toList());
+  }
 
-    @Transactional
-    public void delete(UUID id) {
-        BinaryContent binaryContent = binaryContentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 컨텐츠입니다."));
-        binaryContentRepository.delete(binaryContent);
-    }
+  @Transactional
+  public void delete(UUID id) {
+    BinaryContent binaryContent = binaryContentRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 컨텐츠입니다."));
+    binaryContentRepository.delete(binaryContent);
+  }
 }

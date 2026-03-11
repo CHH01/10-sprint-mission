@@ -19,7 +19,6 @@ public class BasicAuthService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
     private final UserMapper userMapper;
-    private User loggedInUser;
 
     @Transactional
     public UserDto login(LoginRequest request) {
@@ -30,24 +29,7 @@ public class BasicAuthService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        this.loggedInUser = user;
-
         return toDto(user);
-    }
-
-    public void logout() {
-        this.loggedInUser = null;
-    }
-
-    public boolean isLoggedIn() {
-        return loggedInUser != null;
-    }
-
-    public UserDto getCurrentUser() {
-        if (loggedInUser == null) {
-            return null;
-        }
-        return toDto(loggedInUser);
     }
 
     private UserDto toDto(User user) {

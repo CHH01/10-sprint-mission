@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "Message")
 @RestController
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor
@@ -42,7 +44,7 @@ public class MessageController {
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
   public MessageDto createMessage(
-      @Parameter(description = "Message 생성 정보", required = true)
+      @Parameter(description = "Message 생성 정보", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
       @RequestPart("messageCreateRequest") MessageCreateRequest request,
       @Parameter(description = "Message 첨부 파일들")
       @RequestPart(value = "attachments", required = false) List<MultipartFile> files) {

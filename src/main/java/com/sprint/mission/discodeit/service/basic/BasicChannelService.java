@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.*;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -22,10 +21,8 @@ public class BasicChannelService implements ChannelService {
 
   private final UserRepository userRepository;
   private final ChannelRepository channelRepository;
-  private final MessageRepository messageRepository;
   private final ReadStatusRepository readStatusRepository;
   private final ChannelMapper channelMapper;
-  private final BasicAuthService authService;
 
   @Override
   @Transactional
@@ -51,9 +48,8 @@ public class BasicChannelService implements ChannelService {
       participantIds.addAll(request.getParticipantIds());
     }
 
-    UserDto currentUser = authService.getCurrentUser();
-    if (currentUser != null) {
-      participantIds.add(currentUser.id());
+    if (request.getCreatorId() != null) {
+      participantIds.add(request.getCreatorId());
     }
 
     for (UUID userId : participantIds) {
@@ -163,11 +159,6 @@ public class BasicChannelService implements ChannelService {
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
-
-    List<Message> userMessages = messageRepository.findAllByAuthor_Id(userId).stream()
-        .filter(m -> m.getChannel().getId().equals(channelId))
-        .toList();
-    messageRepository.deleteAll(userMessages);
 
     readStatusRepository.findByUser_IdAndChannel_Id(userId, channelId)
         .ifPresent(readStatusRepository::delete);

@@ -10,5 +10,6 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 public class PrivateChannelCreateRequest {
+    private UUID creatorId;
     private List<UUID> participantIds;
 }

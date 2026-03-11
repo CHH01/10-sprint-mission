@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "Channel")
 @RestController
 @RequestMapping("/api/channels")
 @RequiredArgsConstructor
@@ -84,27 +86,35 @@ public class ChannelController {
     return channelService.findAllByUserId(userId);
   }
 
-  @RequestMapping(value = "/all", method = RequestMethod.GET)
+  @GetMapping("/all")
   @ResponseStatus(HttpStatus.OK)
   public List<ChannelDto> getAllChannels() {
     return channelService.getAllChannels();
   }
 
-  @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+  @GetMapping("/{id}")
   @ResponseStatus(HttpStatus.OK)
   public ChannelDto getChannel(@PathVariable UUID id) {
     return channelService.getChannel(id);
   }
 
-  @RequestMapping(value = "/{channelId}/enter", method = RequestMethod.POST)
+  @Operation(summary = "Channel 입장", operationId = "enter_1")
+  @PostMapping("/{channelId}/members")
   @ResponseStatus(HttpStatus.OK)
-  public ChannelDto enterChannel(@RequestParam UUID userId, @PathVariable UUID channelId) {
+  public ChannelDto enterChannel(
+      @Parameter(description = "입장할 User ID", required = true)
+      @RequestParam UUID userId,
+      @PathVariable UUID channelId) {
     return channelService.enterChannel(userId, channelId);
   }
 
-  @RequestMapping(value = "/{channelId}/leave", method = RequestMethod.POST)
+  @Operation(summary = "Channel 퇴장", operationId = "leave_1")
+  @DeleteMapping("/{channelId}/members/{userId}")
   @ResponseStatus(HttpStatus.OK)
-  public void leaveChannel(@RequestParam UUID userId, @PathVariable UUID channelId) {
+  public void leaveChannel(
+      @Parameter(description = "퇴장할 User ID", required = true)
+      @PathVariable UUID userId,
+      @PathVariable UUID channelId) {
     channelService.leaveChannel(userId, channelId);
   }
 }
