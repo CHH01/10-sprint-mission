@@ -1,30 +1,45 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
-
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-public class UserStatus extends BaseEntity implements Serializable {
+@Entity
+@Table(name = "user_statuses")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class UserStatus extends BaseUpdatableEntity {
 
-  private static final long serialVersionUID = 1L;
-  private final UUID userId;
-  private Instant lastSeen;
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false, unique = true)
+  private User user;
 
-  public UserStatus(UUID userId, Instant lastSeen) {
-    super();
-    this.userId = userId;
-    this.lastSeen = lastSeen;
+  @Column(name = "last_active_at", nullable = false)
+  private Instant lastActiveAt;
+
+  public UserStatus(User user, Instant lastActiveAt) {
+    this.user = user;
+    this.lastActiveAt = lastActiveAt;
   }
 
-  public void updateLastSeen(Instant lastSeen) {
-    this.lastSeen = lastSeen;
-    updateTimestamps();
+  public UUID getUserId() {
+    return user != null ? user.getId() : null;
+  }
+
+  public void updateLastActiveAt(Instant lastActiveAt) {
+    this.lastActiveAt = lastActiveAt;
   }
 
   public boolean isOnline() {
-    return lastSeen.isAfter(Instant.now().minusSeconds(300));
+    return lastActiveAt != null && lastActiveAt.isAfter(Instant.now().minusSeconds(300));
   }
 }

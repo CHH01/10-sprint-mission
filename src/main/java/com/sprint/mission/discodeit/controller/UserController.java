@@ -48,8 +48,10 @@ public class UserController {
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
   public UserDto createUser(
-      @Parameter(description = "생성할 User 정보") @RequestPart("userCreateRequest") UserCreateRequest request,
-      @Parameter(description = "User 프로필 이미지") @RequestPart(value = "profile", required = false) MultipartFile profile) {
+      @Parameter(description = "생성할 User 정보", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+      @RequestPart("userCreateRequest") UserCreateRequest request,
+      @Parameter(description = "User 프로필 이미지")
+      @RequestPart(value = "profile", required = false) MultipartFile profile) {
     return userService.createUser(request, profile);
   }
 
@@ -65,9 +67,12 @@ public class UserController {
   @PatchMapping(value = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
   public UserDto updateUser(
-      @Parameter(description = "수정할 User ID") @PathVariable UUID userId,
-      @Parameter(description = "수정할 User 정보") @RequestPart("userUpdateRequest") UserUpdateRequest request,
-      @Parameter(description = "수정할 User 프로필 이미지") @RequestPart(value = "profile", required = false) MultipartFile profile) {
+      @Parameter(description = "수정할 User ID")
+      @PathVariable UUID userId,
+      @Parameter(description = "수정할 User 정보", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+      @RequestPart("userUpdateRequest") UserUpdateRequest request,
+      @Parameter(description = "수정할 User 프로필 이미지")
+      @RequestPart(value = "profile", required = false) MultipartFile profile) {
     return userService.updateUser(userId, request, profile);
   }
 

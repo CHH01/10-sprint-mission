@@ -2,17 +2,12 @@ package com.sprint.mission.discodeit.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.time.Instant;
-import java.util.UUID;
 
 @Getter
+@Setter
 @NoArgsConstructor
 public class UserStatusUpdateRequest {
-    private UUID id;
-    private Instant lastSeen;
-
-    public UserStatusUpdateRequest(UUID id, Instant lastSeen) {
-        this.id = id;
-        this.lastSeen = lastSeen;
-    }
+    private Instant newLastActiveAt;
 }

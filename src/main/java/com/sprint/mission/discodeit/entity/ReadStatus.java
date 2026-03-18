@@ -1,26 +1,58 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-public class ReadStatus extends BaseEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private final UUID userId;
-    private final UUID channelId;
-    private Instant lastReadAt;
+@Entity
+@Table(name = "read_statuses")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class ReadStatus extends BaseUpdatableEntity {
 
-    public ReadStatus(UUID userId, UUID channelId) {
-        super();
-        this.userId = userId;
-        this.channelId = channelId;
-        this.lastReadAt = Instant.now();
-    }
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
 
-    public void updateLastReadAt() {
-        this.lastReadAt = Instant.now();
-        updateTimestamps();
-    }
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "channel_id", nullable = false)
+  private Channel channel;
+
+  @Column(name = "last_read_at")
+  private Instant lastReadAt;
+
+  public ReadStatus(User user, Channel channel, Instant lastReadAt) {
+    this.user = user;
+    this.channel = channel;
+    this.lastReadAt = lastReadAt != null ? lastReadAt : Instant.now();
+  }
+
+  public ReadStatus(User user, Channel channel) {
+    this(user, channel, Instant.now());
+  }
+
+  public UUID getUserId() {
+    return user != null ? user.getId() : null;
+  }
+
+  public UUID getChannelId() {
+    return channel != null ? channel.getId() : null;
+  }
+
+  public void updateLastReadAt(Instant lastReadAt) {
+    this.lastReadAt = lastReadAt != null ? lastReadAt : Instant.now();
+  }
+
+  public void updateLastReadAt() {
+    this.lastReadAt = Instant.now();
+  }
 }

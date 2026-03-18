@@ -5,8 +5,10 @@ import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,38 +16,45 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class BasicBinaryContentService{
-    private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentMapper binaryContentMapper;
+@Transactional(readOnly = true)
+public class BasicBinaryContentService {
 
-    public BinaryContentDto create(BinaryContentRequest request) {
-        BinaryContent binaryContent = new BinaryContent(
-                request.getContent(),
-                request.getFileName(),
-                request.getContentType()
-        );
-        binaryContentRepository.save(binaryContent);
-        return binaryContentMapper.toDto(binaryContent);
+  private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentMapper binaryContentMapper;
+  private final BinaryContentStorage binaryContentStorage;
+
+  @Transactional
+  public BinaryContentDto create(BinaryContentRequest request) {
+    BinaryContent binaryContent = new BinaryContent(
+        request.getFileName(),
+        request.getContentType(),
+        request.getContent() != null ? request.getContent().length : 0
+    );
+    binaryContentRepository.save(binaryContent);
+
+    if (request.getContent() != null) {
+      binaryContentStorage.put(binaryContent.getId(), request.getContent());
     }
 
-    public BinaryContentDto find(UUID id) {
-        BinaryContent binaryContent = binaryContentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 컨텐츠입니다."));
-        return binaryContentMapper.toDto(binaryContent);
-    }
+    return binaryContentMapper.toDto(binaryContent);
+  }
 
-    public BinaryContent findContent(UUID id) {
-        return binaryContentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 컨텐츠입니다."));
-    }
+  public BinaryContentDto find(UUID id) {
+    BinaryContent binaryContent = binaryContentRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 컨텐츠입니다."));
+    return binaryContentMapper.toDto(binaryContent);
+  }
 
-    public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
-        return binaryContentRepository.findAllByIdIn(ids).stream()
-                .map(binaryContentMapper::toDto)
-                .collect(Collectors.toList());
-    }
+  public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
+    return binaryContentRepository.findAllById(ids).stream()
+        .map(binaryContentMapper::toDto)
+        .collect(Collectors.toList());
+  }
 
-    public void delete(UUID id) {
-        binaryContentRepository.delete(id);
-    }
+  @Transactional
+  public void delete(UUID id) {
+    BinaryContent binaryContent = binaryContentRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 컨텐츠입니다."));
+    binaryContentRepository.delete(binaryContent);
+  }
 }

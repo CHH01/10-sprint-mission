@@ -5,11 +5,10 @@ import java.util.UUID;
 
 public record BinaryContentDto(
     UUID id,
-    Instant createdAt,
     String fileName,
     long size,
     String contentType,
-    String bytes
+    byte[] bytes
 ) {
 
 }

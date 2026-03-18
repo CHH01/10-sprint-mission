@@ -1,46 +1,78 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-public class Message extends BaseEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private String content;
-    private final UUID authorId;
-    private final UUID channelId;
-    private final List<UUID> attachmentIds;
+@Entity
+@Table(name = "messages")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Message extends BaseUpdatableEntity {
 
-    public Message(UUID channelId, UUID authorId, String content, List<UUID> attachmentIds) {
-        super();
+    @Column(columnDefinition = "TEXT")
+    private String content;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id")
+    private User author;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id", nullable = false)
+    private Channel channel;
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "message_attachments",
+        joinColumns = @JoinColumn(name = "message_id"),
+        inverseJoinColumns = @JoinColumn(name = "attachment_id")
+    )
+    private final List<BinaryContent> attachments = new ArrayList<>();
+
+    public Message(Channel channel, User author, String content) {
+        this.channel = channel;
+        this.author = author;
         this.content = content;
-        this.authorId = authorId;
-        this.channelId = channelId;
-        this.attachmentIds = attachmentIds != null ? attachmentIds : new ArrayList<>();
     }
-    public Message(UUID channelId, UUID authorId, String content) {
-        this(channelId, authorId, content, null);
+
+    public UUID getAuthorId() {
+        return author != null ? author.getId() : null;
     }
+
+    public UUID getChannelId() {
+        return channel != null ? channel.getId() : null;
+    }
+
     public void updateContent(String content) {
         this.content = content;
-        updateTimestamps();
     }
 
-    public void updateAttachments(List<UUID> attachmentIds) {
-        this.attachmentIds.clear();
-        if (attachmentIds != null) {
-            this.attachmentIds.addAll(attachmentIds);
-        }
-        updateTimestamps();
+    public void addAttachment(BinaryContent attachment) {
+        this.attachments.add(attachment);
+    }
+
+    public void removeAttachment(BinaryContent attachment) {
+        this.attachments.remove(attachment);
     }
 
     @Override
     public String toString() {
-        return "메시지[채널ID: " + channelId +
-                ", 작성자ID: " + authorId +
+        return "메시지[채널: " + (channel != null ? channel.getName() : "null") +
+                ", 작성자: " + (author != null ? author.getName() : "null") +
                 ", 내용: " + content + "]";
     }
 
@@ -49,11 +81,11 @@ public class Message extends BaseEntity implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Message message = (Message) o;
-        return java.util.Objects.equals(getId(), message.getId());
+        return Objects.equals(getId(), message.getId());
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(getId());
+        return Objects.hash(getId());
     }
 }
