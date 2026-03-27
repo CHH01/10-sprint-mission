@@ -10,13 +10,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Tag(name = "Channel")
 @RestController
 @RequestMapping("/api/channels")
@@ -31,6 +34,7 @@ public class ChannelController {
   @PostMapping("/public")
   @ResponseStatus(HttpStatus.CREATED)
   public ChannelDto createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
+    log.info("REST request to create Public Channel: {}", request.getName());
     return channelService.createPublicChannel(request);
   }
 
@@ -39,7 +43,8 @@ public class ChannelController {
       content = @Content(schema = @Schema(implementation = ChannelDto.class)))
   @PostMapping("/private")
   @ResponseStatus(HttpStatus.CREATED)
-  public ChannelDto createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
+  public ChannelDto createPrivateChannel(@RequestBody @Valid PrivateChannelCreateRequest request) {
+    log.info("REST request to create Private Channel");
     return channelService.createPrivateChannel(request);
   }
 
@@ -57,7 +62,8 @@ public class ChannelController {
   public ChannelDto updateChannel(
       @Parameter(description = "수정할 Channel ID", required = true)
       @PathVariable UUID channelId,
-      @RequestBody PublicChannelUpdateRequest request) {
+      @RequestBody @Valid PublicChannelUpdateRequest request) {
+    log.info("REST request to update Channel: id={}", channelId);
     return channelService.updateChannel(channelId, request);
   }
 
@@ -72,6 +78,7 @@ public class ChannelController {
   public void deleteChannel(
       @Parameter(description = "삭제할 Channel ID", required = true)
       @PathVariable UUID channelId) {
+    log.info("REST request to delete Channel: id={}", channelId);
     channelService.deleteChannel(channelId);
   }
 
@@ -83,18 +90,21 @@ public class ChannelController {
   public List<ChannelDto> getChannels(
       @Parameter(description = "조회할 User ID", required = true)
       @RequestParam UUID userId) {
+    log.debug("REST request to get Channels for user: id={}", userId);
     return channelService.findAllByUserId(userId);
   }
 
   @GetMapping("/all")
   @ResponseStatus(HttpStatus.OK)
   public List<ChannelDto> getAllChannels() {
+    log.debug("REST request to get all Channels");
     return channelService.getAllChannels();
   }
 
   @GetMapping("/{id}")
   @ResponseStatus(HttpStatus.OK)
   public ChannelDto getChannel(@PathVariable UUID id) {
+    log.debug("REST request to get Channel: id={}", id);
     return channelService.getChannel(id);
   }
 
@@ -105,6 +115,7 @@ public class ChannelController {
       @Parameter(description = "입장할 User ID", required = true)
       @RequestParam UUID userId,
       @PathVariable UUID channelId) {
+    log.info("REST request to enter Channel: userId={}, channelId={}", userId, channelId);
     return channelService.enterChannel(userId, channelId);
   }
 
@@ -115,6 +126,7 @@ public class ChannelController {
       @Parameter(description = "퇴장할 User ID", required = true)
       @PathVariable UUID userId,
       @PathVariable UUID channelId) {
+    log.info("REST request to leave Channel: userId={}, channelId={}", userId, channelId);
     channelService.leaveChannel(userId, channelId);
   }
 }

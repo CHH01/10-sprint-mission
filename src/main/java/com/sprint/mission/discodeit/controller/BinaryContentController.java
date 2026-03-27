@@ -13,12 +13,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Tag(name = "BinaryContent")
 @RestController
 @RequestMapping("/api/binaryContents")
@@ -38,6 +40,7 @@ public class BinaryContentController {
   public ResponseEntity<?> download(
       @Parameter(description = "다운로드할 파일 ID", required = true)
       @PathVariable UUID binaryContentId) {
+    log.info("REST request to download file: id={}", binaryContentId);
     BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
     return binaryContentStorage.download(binaryContentDto);
   }
@@ -53,6 +56,7 @@ public class BinaryContentController {
   public BinaryContentDto find(
       @Parameter(description = "조회할 첨부 파일 ID", required = true)
       @PathVariable UUID binaryContentId) {
+    log.debug("REST request to get binary content info: id={}", binaryContentId);
     return binaryContentService.find(binaryContentId);
   }
 
@@ -63,6 +67,7 @@ public class BinaryContentController {
   public List<BinaryContentDto> findAllByIdIn(
       @Parameter(description = "조회할 첨부 파일 ID 목록", required = true)
       @RequestParam List<UUID> binaryContentIds) {
+    log.debug("REST request to get multiple binary contents info: count={}", binaryContentIds.size());
     return binaryContentService.findAllByIdIn(binaryContentIds);
   }
 }

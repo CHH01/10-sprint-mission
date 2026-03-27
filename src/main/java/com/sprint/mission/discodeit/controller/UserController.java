@@ -11,7 +11,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Tag(name = "User")
 @RestController
 @RequestMapping("/api/users")
@@ -35,6 +38,7 @@ public class UserController {
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
   public List<UserDto> findAll() {
+    log.debug("REST request to get all Users");
     return userService.getAllUsers();
   }
 
@@ -49,9 +53,11 @@ public class UserController {
   @ResponseStatus(HttpStatus.CREATED)
   public UserDto createUser(
       @Parameter(description = "생성할 User 정보", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
-      @RequestPart("userCreateRequest") UserCreateRequest request,
+      @RequestPart("userCreateRequest") @Valid UserCreateRequest request,
       @Parameter(description = "User 프로필 이미지")
+
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
+    log.info("REST request to create User: {}", request.getUsername());
     return userService.createUser(request, profile);
   }
 
@@ -70,9 +76,10 @@ public class UserController {
       @Parameter(description = "수정할 User ID")
       @PathVariable UUID userId,
       @Parameter(description = "수정할 User 정보", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
-      @RequestPart("userUpdateRequest") UserUpdateRequest request,
+      @RequestPart("userUpdateRequest") @Valid UserUpdateRequest request,
       @Parameter(description = "수정할 User 프로필 이미지")
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
+    log.info("REST request to update User: id={}", userId);
     return userService.updateUser(userId, request, profile);
   }
 
@@ -85,6 +92,7 @@ public class UserController {
   @DeleteMapping("/{userId}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteUser(@Parameter(description = "삭제할 User ID") @PathVariable UUID userId) {
+    log.info("REST request to delete User: id={}", userId);
     userService.deleteUser(userId);
   }
 
@@ -99,13 +107,15 @@ public class UserController {
   @ResponseStatus(HttpStatus.OK)
   public UserStatusDto updateStatus(
       @Parameter(description = "상태를 변경할 User ID") @PathVariable UUID userId,
-      @RequestBody UserStatusUpdateRequest request) {
+      @RequestBody @Valid UserStatusUpdateRequest request) {
+    log.debug("REST request to update UserStatus: id={}", userId);
     return userStatusService.updateByUserId(userId, request);
   }
 
   @GetMapping(value = "/{id}")
   @ResponseStatus(HttpStatus.OK)
   public UserDto getUser(@PathVariable UUID id) {
+    log.debug("REST request to get User: id={}", id);
     return userService.getUser(id);
   }
 }
