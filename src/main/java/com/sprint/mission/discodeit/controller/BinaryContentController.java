@@ -53,21 +53,22 @@ public class BinaryContentController {
       @ApiResponse(responseCode = "404", description = "첨부 파일을 찾을 수 없음",
           content = @Content(examples = @ExampleObject(value = "BinaryContent with id {binaryContentId} not found")))
   })
-  public BinaryContentDto find(
+  public ResponseEntity<BinaryContentDto> find(
       @Parameter(description = "조회할 첨부 파일 ID", required = true)
       @PathVariable UUID binaryContentId) {
     log.debug("REST request to get binary content info: id={}", binaryContentId);
-    return binaryContentService.find(binaryContentId);
+    return ResponseEntity.ok(binaryContentService.find(binaryContentId));
   }
 
   @GetMapping
   @Operation(summary = "여러 첨부 파일 조회")
   @ApiResponse(responseCode = "200", description = "첨부 파일 목록 조회 성공",
       content = @Content(array = @ArraySchema(schema = @Schema(implementation = BinaryContentDto.class))))
-  public List<BinaryContentDto> findAllByIdIn(
+  public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
       @Parameter(description = "조회할 첨부 파일 ID 목록", required = true)
       @RequestParam List<UUID> binaryContentIds) {
-    log.debug("REST request to get multiple binary contents info: count={}", binaryContentIds.size());
-    return binaryContentService.findAllByIdIn(binaryContentIds);
+    log.debug("REST request to get multiple binary contents info: count={}",
+        binaryContentIds.size());
+    return ResponseEntity.ok(binaryContentService.findAllByIdIn(binaryContentIds));
   }
 }
