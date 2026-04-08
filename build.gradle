@@ -9,7 +9,7 @@ ext {
 }
 
 group = 'com.sprint.mission'
-version = '0.0.1-SNAPSHOT'
+version = '1.2-M8'
 description = 'Demo project for Spring Boot'
 sourceCompatibility = '17'
 
@@ -36,7 +36,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.mapstruct:mapstruct:1.6.3'
-    implementation 'de.codecentric:spring-boot-admin-starter-client'
+    implementation 'software.amazon.awssdk:s3:2.31.7'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
     compileOnly 'org.projectlombok:lombok'
@@ -53,19 +53,21 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+tasks.named('check') {
+    dependsOn(jacocoTestCoverageVerification)
+}
+
 jar {
     enabled = false
 }
 
 bootJar {
-    archiveFileName = 'app.jar'
 }
 dependencyManagement {
     imports {
         mavenBom "de.codecentric:spring-boot-admin-dependencies:$springBootAdminVersion"
     }
 }
-
 
 
 test {
@@ -77,5 +79,20 @@ jacocoTestReport {
     reports {
         xml.required = true
         html.required = true
+    }
+}
+
+jacocoTestCoverageVerification {
+    dependsOn jacocoTestReport
+    violationRules {
+        rule {
+            element = 'PACKAGE'
+            includes = ['com.sprint.mission.discodeit.service.basic']
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.60
+            }
+        }
     }
 }
