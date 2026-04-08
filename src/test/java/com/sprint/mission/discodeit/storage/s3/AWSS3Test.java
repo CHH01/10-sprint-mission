@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.storage.s3;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -26,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Disabled("CI 환경에서 .env 파일 부재로 인한 빌드 실패를 방지하기 위해 비활성화합니다.")
 class AWSS3Test {
 
   private static S3Client s3Client;
@@ -34,16 +32,18 @@ class AWSS3Test {
   private static String bucketName;
 
   @BeforeAll
-  static void setUp() throws IOException {
+  static void setUp() {
     Properties props = new Properties();
     try (FileInputStream fis = new FileInputStream(".env")) {
       props.load(fis);
+    } catch (IOException e) {
+      // .env 파일이 없는 경우(CI 환경) 로그를 남기지 않고 시스템 환경 변수 사용으로 넘어갑니다.
     }
 
-    String accessKey = props.getProperty("AWS_ACCESS_KEY_ID");
-    String secretKey = props.getProperty("AWS_SECRET_ACCESS_KEY");
-    String regionStr = props.getProperty("AWS_REGION");
-    bucketName = props.getProperty("AWS_BUCKET_NAME");
+    String accessKey = getProp(props, "AWS_ACCESS_KEY_ID");
+    String secretKey = getProp(props, "AWS_SECRET_ACCESS_KEY");
+    String regionStr = getProp(props, "AWS_REGION");
+    bucketName = getProp(props, "AWS_BUCKET_NAME");
 
     AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
     Region region = Region.of(regionStr);
@@ -57,6 +57,11 @@ class AWSS3Test {
         .region(region)
         .credentialsProvider(StaticCredentialsProvider.create(credentials))
         .build();
+  }
+
+  private static String getProp(Properties props, String key) {
+    String value = props.getProperty(key);
+    return (value != null) ? value : System.getenv(key);
   }
 
   @Test
