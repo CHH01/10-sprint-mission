@@ -24,9 +24,9 @@ public class AdminInitializer implements CommandLineRunner {
     @Transactional
     @Override
     public void run(String... args) {
-        String adminUsername = "admin";
-        if (!userRepository.existsByUsername(adminUsername)) {
+        if (!userRepository.existsByRole(Role.ADMIN)) {
             log.info("어드민 계정 자동 생성 진행");
+            String adminUsername = "admin";
             User admin = new User(
                     adminUsername,
                     "admin@email.com",
@@ -39,7 +39,7 @@ public class AdminInitializer implements CommandLineRunner {
             userRepository.save(admin);
             log.info("어드민 계정 초기화 완료");
         } else {
-            log.info("어드민 계정이 이미 존재하므로 초기화를 건너뜀");
+            log.info("어드민 권한을 가진 사용자가 이미 존재하므로 초기화를 건너뜀");
         }
     }
 }
