@@ -111,7 +111,7 @@ public class BasicMessageService implements MessageService {
     return pageResponseMapper.fromSlice(slice, nextCursor);
   }
 
-  @PreAuthorize("hasRole('ADMIN') or @messageRepository.findById(#messageId).get().author.id == authentication.principal.userDto.id")
+  @PreAuthorize("hasRole('ADMIN') or @basicMessageService.isAuthor(#messageId, authentication.principal.userDto.id)")
   @Transactional
   @Override
   public MessageDto update(UUID messageId, MessageUpdateRequest request) {
@@ -124,7 +124,7 @@ public class BasicMessageService implements MessageService {
     return messageMapper.toDto(message);
   }
 
-  @PreAuthorize("hasRole('ADMIN') or @messageRepository.findById(#messageId).get().author.id == authentication.principal.userDto.id")
+  @PreAuthorize("hasRole('ADMIN') or @basicMessageService.isAuthor(#messageId, authentication.principal.userDto.id)")
   @Transactional
   @Override
   public void delete(UUID messageId) {
@@ -133,5 +133,13 @@ public class BasicMessageService implements MessageService {
         .orElseThrow(() -> MessageNotFoundException.withId(messageId));
     messageRepository.deleteById(messageId);
     log.info("메시지 삭제 완료: id={}", messageId);
+  }
+
+  @Transactional(readOnly = true)
+  @Override
+  public boolean isAuthor(UUID messageId, UUID userId) {
+    return messageRepository.findById(messageId)
+        .map(message -> message.getAuthor().getId().equals(userId))
+        .orElse(false);
   }
 }

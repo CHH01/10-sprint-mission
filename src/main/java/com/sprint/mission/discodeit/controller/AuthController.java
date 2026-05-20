@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -39,8 +40,10 @@ public class AuthController {
     if (userDetails == null) {
       return ResponseEntity.status(401).build();
     }
+    UUID userId = userDetails.getUserDto().id();
     log.debug("내 정보 조회: username={}", userDetails.getUsername());
-    return ResponseEntity.ok(userDetails.getUserDto());
+    UserDto freshUserDto = userService.find(userId);
+    return ResponseEntity.ok(freshUserDto);
   }
 
   @PutMapping("role")
