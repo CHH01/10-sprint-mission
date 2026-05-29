@@ -22,78 +22,71 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  @Bean
-  static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
-      RoleHierarchy roleHierarchy) {
-    DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
-    handler.setRoleHierarchy(roleHierarchy);
-    return handler;
-  }
+    @Bean
+    static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
+            RoleHierarchy roleHierarchy) {
+        DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+        handler.setRoleHierarchy(roleHierarchy);
+        return handler;
+    }
 
-  @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http,
-      JwtAuthenticationFilter jwtAuthenticationFilter,
-      JwtLoginSuccessHandler jwtLoginSuccessHandler,
-      JwtLogoutHandler jwtLogoutHandler,
-      LoginFailureHandler loginFailureHandler,
-      @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) throws Exception {
-    http
-        .exceptionHandling(ex -> ex
-            .authenticationEntryPoint((request, response, authException) -> resolver
-                .resolveException(request, response, null,
-                    authException))
-            .accessDeniedHandler((request, response,
-                accessDeniedException) -> resolver.resolveException(
-                request, response, null,
-                accessDeniedException)))
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-            .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
-            .requestMatchers("/api/auth/csrf-token", "/api/auth/login",
-                "/api/auth/logout")
-            .permitAll()
-            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**",
-                "/swagger-resources/**", "/webjars/**",
-                "/swagger-ui.html", "/actuator/**", "/error")
-            .permitAll()
-            .requestMatchers("/", "/index.html", "/favicon.ico", "/assets/**")
-            .permitAll()
-            .requestMatchers("/login", "/signup", "/channels/**", "/users/**")
-            .permitAll()
-            .anyRequest().authenticated())
-        .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .csrf(csrf -> csrf
-            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-            .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
-        .formLogin(login -> login
-            .loginProcessingUrl("/api/auth/login")
-            .successHandler(jwtLoginSuccessHandler)
-            .failureHandler(loginFailureHandler))
-        .logout(logout -> logout
-            .logoutUrl("/api/auth/logout")
-            .addLogoutHandler(jwtLogoutHandler)
-            .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(
-                HttpStatus.NO_CONTENT)))
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-    return http.build();
-  }
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http,
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            JwtLoginSuccessHandler jwtLoginSuccessHandler,
+            JwtLogoutHandler jwtLogoutHandler,
+            LoginFailureHandler loginFailureHandler,
+            @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) throws Exception {
+        http
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> resolver
+                                .resolveException(request, response, null,
+                                        authException))
+                        .accessDeniedHandler((request, response,
+                                accessDeniedException) -> resolver.resolveException(
+                                        request, response, null,
+                                        accessDeniedException)))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
+                        .requestMatchers("/api/auth/csrf-token", "/api/auth/login", "/api/auth/logout").permitAll()
+                        .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/api/**"))).permitAll()
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
+                .formLogin(login -> login
+                        .loginProcessingUrl("/api/auth/login")
+                        .successHandler(jwtLoginSuccessHandler)
+                        .failureHandler(loginFailureHandler))
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .addLogoutHandler(jwtLogoutHandler)
+                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(
+                                HttpStatus.NO_CONTENT)))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
 
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-  @Bean
-  public RoleHierarchy roleHierarchy() {
-    return RoleHierarchyImpl
-        .fromHierarchy("ROLE_ADMIN > ROLE_CHANNEL_MANAGER\nROLE_CHANNEL_MANAGER > ROLE_USER");
-  }
-  
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        return RoleHierarchyImpl
+                .fromHierarchy("ROLE_ADMIN > ROLE_CHANNEL_MANAGER\nROLE_CHANNEL_MANAGER > ROLE_USER");
+    }
+
 }
