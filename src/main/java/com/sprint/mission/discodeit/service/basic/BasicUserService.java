@@ -171,12 +171,14 @@ public class BasicUserService implements UserService {
         .orElseThrow(() -> UserNotFoundException.withId(request.userId()));
 
     Role oldRole = user.getRole();
-    user.updateRole(request.newRole());
-
-    jwtRegistry.invalidateJwtInformationByUserId(request.userId());
-
-    log.info("사용자 권한 수정 완료: id={}, newRole={}", request.userId(), request.newRole());
-    eventPublisher.publishEvent(new RoleUpdatedEvent(request.userId(), oldRole, request.newRole()));
+    if (oldRole != request.newRole()) {
+      user.updateRole(request.newRole());
+      jwtRegistry.invalidateJwtInformationByUserId(request.userId());
+      log.info("사용자 권한 수정 완료: id={}, newRole={}", request.userId(), request.newRole());
+      eventPublisher.publishEvent(new RoleUpdatedEvent(request.userId(), oldRole, request.newRole()));
+    } else {
+      log.info("사용자 권한이 기존과 동일하여 수정을 건너뜁니다: id={}, role={}", request.userId(), oldRole);
+    }
     return userMapper.toDto(user);
   }
 }
