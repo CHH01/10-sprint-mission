@@ -12,6 +12,9 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +29,9 @@ public class NotificationRequiredEventListener {
   private final ReadStatusRepository readStatusRepository;
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
+  private final CacheManager cacheManager;
 
+  @Async
   @TransactionalEventListener
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void on(MessageCreatedEvent event) {
@@ -53,10 +58,17 @@ public class NotificationRequiredEventListener {
       }
       Notification notification = new Notification(receiver, title, content);
       notificationRepository.save(notification);
+
+      Cache cache = cacheManager.getCache("notifications");
+      if (cache != null) {
+        cache.evict(receiver.getId());
+      }
+      
       log.info("메시지 수신 알림 생성 완료 - receiver: {}, title: {}", receiver.getUsername(), title);
     }
   }
 
+  @Async
   @TransactionalEventListener
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void on(RoleUpdatedEvent event) {
@@ -73,6 +85,12 @@ public class NotificationRequiredEventListener {
 
     Notification notification = new Notification(user, title, content);
     notificationRepository.save(notification);
+
+    Cache cache = cacheManager.getCache("notifications");
+    if (cache != null) {
+      cache.evict(user.getId());
+    }
+
     log.info("권한 변경 알림 생성 완료 - receiver: {}, content: {}", user.getUsername(), content);
   }
 }
