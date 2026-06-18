@@ -6,6 +6,9 @@ import com.sprint.mission.discodeit.dto.data.JwtDto;
 import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.service.SseService;
+import com.sprint.mission.discodeit.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +29,8 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final ObjectMapper objectMapper;
   private final JwtTokenProvider tokenProvider;
   private final JwtRegistry jwtRegistry;
+  private final UserService userService;
+  private final SseService sseService;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request,
@@ -59,6 +64,13 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 refreshToken
             )
         );
+
+        try {
+          UserDto userDto = userService.find(userDetails.getUserDto().id());
+          sseService.broadcast("users.updated", userDto);
+        } catch (Exception e) {
+          log.error("Failed to broadcast login status for user {}", userDetails.getUserDto().id(), e);
+        }
 
         log.info("JWT access and refresh tokens issued for user: {}", userDetails.getUsername());
 
